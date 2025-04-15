@@ -1,10 +1,5 @@
 package com.cordestitch.service.serviceimplementation.order;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.cordestitch.entity.cart.CartEntity;
-import com.cordestitch.entity.cart.CustomizedCartItemEntity;
-import com.cordestitch.entity.customization.Fabric;
-import com.cordestitch.entity.customization.UserCustomizationEntity;
 import com.cordestitch.entity.loyalty.LoyaltyPointsEntity;
 import com.cordestitch.entity.loyalty.LoyaltyPointsTransactionEntity;
 import com.cordestitch.entity.order.OrderEntity;
@@ -28,7 +23,6 @@ import com.cordestitch.exception.product.ProductNotFoundException;
 import com.cordestitch.exception.user.AddressNotFoundException;
 import com.cordestitch.exception.user.UserNotFoundException;
 import com.cordestitch.repository.cart.CartRepository;
-import com.cordestitch.repository.customization.UserCustomizationRepository;
 import com.cordestitch.repository.loyalty.LoyaltyPointsRepository;
 import com.cordestitch.repository.loyalty.LoyaltyPointsTransactionRepository;
 import com.cordestitch.repository.order.OrderItemRepository;
@@ -43,15 +37,12 @@ import com.cordestitch.repository.user.UserRepository;
 import com.cordestitch.request.order.*;
 import com.cordestitch.request.user.AddressRequest;
 import com.cordestitch.response.SuccessResponse;
-import com.cordestitch.response.customization.CustomizationCartResponse;
-import com.cordestitch.response.customization.CustomizedAddDataResponse;
 import com.cordestitch.response.order.*;
 import com.cordestitch.response.product.ProductResponse;
 import com.cordestitch.response.user.AddressResponse;
 import com.cordestitch.service.service.loyalty.LoyaltyPointsService;
 import com.cordestitch.service.service.order.OrderService;
 import com.cordestitch.service.service.whatsapp.WhatsAppService;
-import com.cordestitch.service.serviceimplementation.customization.UserCustomizationServiceImplementation;
 import com.cordestitch.service.serviceimplementation.payment.PaymentServiceImpl;
 import com.cordestitch.util.Constants;
 import com.cordestitch.util.Generator;
@@ -68,7 +59,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
 
@@ -95,11 +85,7 @@ public class OrderServiceImplementation implements OrderService {
 
     private final ReturnRepository returnRepository;
 
-    private final UserCustomizationRepository userCustomizationRepository;
-
     private final LoyaltyPointsService loyaltyPointsService;
-
-    private final ObjectMapper objectMapper;
 
     private final OrderServiceMappingHelper orderServiceMappingHelper;
 
@@ -110,8 +96,6 @@ public class OrderServiceImplementation implements OrderService {
     private final CartRepository cartRepository;
 
     private final RefundRepository refundRepository;
-
-    private final UserCustomizationServiceImplementation serviceImplementation;
 
     private final MongoTemplate mongoTemplate;
 
@@ -130,8 +114,7 @@ public class OrderServiceImplementation implements OrderService {
     @Override
     public PlaceAnOrderResponse placeAnOrder(OrderRequest orderRequest) {
 
-        if ((isNull(orderRequest.getOrderItemRequests()) || orderRequest.getOrderItemRequests().isEmpty())
-                && (isNull(orderRequest.getCustomizationCartResponse()) || orderRequest.getCustomizationCartResponse().isEmpty())) {
+        if ((isNull(orderRequest.getOrderItemRequests()) || orderRequest.getOrderItemRequests().isEmpty())) {
             throw new OrderItemNotFoundException(Constants.ORDER_ITEM_NOT_FOUND);
         }
 
@@ -152,22 +135,16 @@ public class OrderServiceImplementation implements OrderService {
                 log.info("Order items created: {}", orderItems);
             }
 
-            List<OrderItemEntity> customizedOrderItemEntities = getNewCustomizedOrderItemEntities(orderRequest.getCustomizationCartResponse(), orderEntity);
-            if (!customizedOrderItemEntities.isEmpty()) {
-                orderItemRepository.saveAll(customizedOrderItemEntities);
-                log.info("Customized items created: {}", customizedOrderItemEntities);
-            }
+            orderEntity.setOrderItemEntities(orderItems);
 
-            orderEntity.setOrderItemEntities(Stream.concat(orderItems.stream(), customizedOrderItemEntities.stream()).toList());
-
-            redeemLoyaltyTransaction(orderRequest,userEntity,orderEntity);
+            redeemLoyaltyTransaction(orderRequest, userEntity, orderEntity);
 
             if (orderRequest.getPaymentMethod().equalsIgnoreCase(Constants.COD)) {
                 PaymentEntity paymentEntity = mapToPaymentEntity(orderRequest, orderEntity);
                 paymentRepository.save(paymentEntity);
 
                 orderEntity.setOrderStatus(OrderStatus.CONFIRMED);
-                for(OrderItemEntity orderItemEntity: orderEntity.getOrderItemEntities()) {
+                for (OrderItemEntity orderItemEntity : orderEntity.getOrderItemEntities()) {
                     orderItemEntity.setOrderStatus(OrderStatus.CONFIRMED);
                     orderItemEntity.setDeliveryStatus(DeliveryStatus.ORDER_CONFIRMED);
                 }
@@ -182,7 +159,7 @@ public class OrderServiceImplementation implements OrderService {
                 updateProductCache(orderRequest);
             }
 
-            Stream.concat(orderItems.stream(), customizedOrderItemEntities.stream())
+            orderItems.stream()
                     .map(OrderItemEntity::getOrderItemId)
                     .forEach(orderItemId -> loyaltyPointsService.processOrderLoyaltyPoints(orderItemId, orderRequest.getUserId()));
 
@@ -206,11 +183,6 @@ public class OrderServiceImplementation implements OrderService {
     private void removerCartItemsFromTheDB(OrderRequest orderRequest) {
         SuccessResponse response = removeItemsFromCart(orderRequest.getUserId(), orderRequest.getOrderItemRequests());
         log.info("Removed items from cart: {}", response);
-
-        if(orderRequest.getCustomizationCartResponse() != null && !orderRequest.getCustomizationCartResponse().isEmpty()) {
-            SuccessResponse successResponse = removeCustomizedItemsFromCart(orderRequest.getUserId(), orderRequest.getCustomizationCartResponse());
-            log.info("Removed customized items from cart: {}", successResponse);
-        }
     }
 
     @Transactional
@@ -232,7 +204,7 @@ public class OrderServiceImplementation implements OrderService {
             orderItem.setCancelDate(LocalDateTime.now(ZoneId.of(Constants.ZONE)));
             orderRepository.save(orderEntity);
 
-            whatsAppService.notifyOrderCancellation(orderEntity.getUserEntity().getPhoneNumber(),orderEntity.getUserEntity().getFirstName(),orderItem.getOrderItemId());
+            whatsAppService.notifyOrderCancellation(orderEntity.getUserEntity().getPhoneNumber(), orderEntity.getUserEntity().getFirstName(), orderItem.getOrderItemId());
             log.info("Whatsapp notification sent successfully for order cancellation");
 
             if (orderEntity.getPaymentEntity().getPaymentMethod().equalsIgnoreCase(Constants.COD)) {
@@ -335,20 +307,12 @@ public class OrderServiceImplementation implements OrderService {
         response.setOrderDate(orderEntity.getOrderDate());
         response.setOrderStatus(orderEntity.getOrderStatus());
 
-        List<OrderItemResponse> orderItemResponses = new ArrayList<>();
-        List<CustomizedCartItemResponse> customizedCartItemResponses = new ArrayList<>();
-
-        for (OrderItemEntity orderItemEntity : orderEntity.getOrderItemEntities()) {
-            if (!isNull(orderItemEntity.getUserCustomizationEntity())) {
-                customizedCartItemResponses.add(orderServiceMappingHelper.mapToCustomizedCartItemResponse(orderItemEntity));
-            } else {
-                orderItemResponses.add(orderServiceMappingHelper.mapToOrderItemResponse(orderItemEntity));
-            }
-        }
+        List<OrderItemResponse> orderItemResponses = orderEntity.getOrderItemEntities()
+                .stream()
+                .map(orderServiceMappingHelper::mapToOrderItemResponse)
+                .toList();
 
         response.setOrderItemResponse(orderItemResponses);
-        response.setCustomizedCartItemResponses(customizedCartItemResponses);
-
         response.setAddressResponse(mapToAddressResponse(orderEntity.getAddressEntity()));
         response.setPaymentResponse(mapToPaymentResponse(orderEntity.getPaymentEntity()));
 
@@ -426,7 +390,7 @@ public class OrderServiceImplementation implements OrderService {
         }
     }
 
-    private void redeemLoyaltyTransaction(OrderRequest orderRequest,UserEntity userEntity,OrderEntity orderEntity) {
+    private void redeemLoyaltyTransaction(OrderRequest orderRequest, UserEntity userEntity, OrderEntity orderEntity) {
         if (!isNull(orderRequest.getLoyaltyPointsToRedeem()) && orderRequest.getLoyaltyPointsToRedeem() != 0.0) {
             SuccessResponse successResponse = loyaltyPointsService.redeemLoyaltyPoints(userEntity.getUserId(), orderEntity, orderRequest.getLoyaltyPointsToRedeem());
             log.info("Loyalty points redeemed: {}", successResponse);
@@ -552,23 +516,12 @@ public class OrderServiceImplementation implements OrderService {
         response.setOrderId(orderEntity.getOrderId());
         response.setOrderDate(orderEntity.getOrderDate());
         response.setOrderStatus(orderEntity.getOrderStatus());
-
-
-        List<OrderItemResponse> orderItemResponses = new ArrayList<>();
-        List<CustomizedCartItemResponse> customizedCartItemResponses = new ArrayList<>();
-
-        for (OrderItemEntity orderItemEntity : orderEntity.getOrderItemEntities()) {
-            if (!isNull(orderItemEntity.getUserCustomizationEntity())) {
-                customizedCartItemResponses.add(orderServiceMappingHelper.mapToCustomizedCartItemResponse(orderItemEntity));
-            } else {
-                orderItemResponses.add(orderServiceMappingHelper.mapToOrderItemResponse(orderItemEntity));
-            }
-        }
-
+        List<OrderItemResponse> orderItemResponses = orderEntity.getOrderItemEntities()
+                .stream()
+                .map(orderServiceMappingHelper::mapToOrderItemResponse)
+                .toList();
         response.setOrderItemResponse(orderItemResponses);
-        response.setCustomizedCartItemResponses(customizedCartItemResponses);
         response.setPaymentResponse(mapToPaymentResponse(orderEntity.getPaymentEntity()));
-
         return response;
     }
 
@@ -771,62 +724,6 @@ public class OrderServiceImplementation implements OrderService {
                 .toList();
     }
 
-    private List<OrderItemEntity> getNewCustomizedOrderItemEntities(List<CustomizationCartResponse> customizationCartResponses, OrderEntity orderEntity) {
-
-        if (isNull(customizationCartResponses) || customizationCartResponses.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return customizationCartResponses.stream()
-                .map(customization -> {
-                    OrderItemEntity customizationOrderItem = new OrderItemEntity();
-                    customizationOrderItem.setOrderItemId(generator.generateId(Constants.ORDER_ITEM_ID));
-                    customizationOrderItem.setQuantity(customization.getQuantity());
-                    customizationOrderItem.setUnitPrice(customization.getPrice());
-                    customizationOrderItem.setReturnDaysPolicy(Constants.RETURN_DAYS_POLICY_FOR_CUSTOMIZATION);
-                    customizationOrderItem.setDeliveryStatus(DeliveryStatus.PENDING);
-                    customizationOrderItem.setOrderStatus(OrderStatus.PENDING);
-                    customizationOrderItem.setReturnStatus(ReturnStatus.NOT_RETURNED);
-                    customizationOrderItem.setTotalAmount(customization.getPrice() * customization.getQuantity());
-                    customizationOrderItem.setOrderEntity(orderEntity);
-
-                    UserCustomizationEntity customizationEntity = new UserCustomizationEntity();
-                    customizationEntity.setUserCustomizationId(generator.generateId(Constants.USER_CUSTOMIZATION_ID));
-                    customizationEntity.setCustomizationProductUrl(customization.getProductImageUrl());
-
-                    CustomizedAddDataResponse customizedAddDataResponse = customization.getCustomizedAddDataResponse();
-                    if (!isNull(customizedAddDataResponse)) {
-                        customizationEntity.setPantType(customizedAddDataResponse.getPantType());
-                        customizationEntity.setTrueWaistMeasurement(customizedAddDataResponse.getTrueWaistMeasurement());
-                        customizationEntity.setPantInSeamLength(customizedAddDataResponse.getPantInSeamLength());
-                        customizationEntity.setPantOutSeamLength(customizedAddDataResponse.getPantOutSeamLength());
-                        customizationEntity.setFitType(customizedAddDataResponse.getFitType());
-                        customizationEntity.setRiseType(customizedAddDataResponse.getRiseType());
-                        customizationEntity.setFrontPocketType(customizedAddDataResponse.getFrontPocketType());
-                        customizationEntity.setBackPocketType(customizedAddDataResponse.getBackPocketType());
-                        customizationEntity.setFrontButtonType(customizedAddDataResponse.getFrontButtonType());
-                        customizationEntity.setBackButtonType(customizedAddDataResponse.getBackButtonType());
-                        customizationEntity.setPantPleatType(customizedAddDataResponse.getPantPleatType());
-                        customizationEntity.setFlyType(customizedAddDataResponse.getFlyType());
-                        customizationEntity.setPantCuffsType(customizedAddDataResponse.getPantCuffsType());
-                        customizationEntity.setFabric(objectMapper.valueToTree(customizedAddDataResponse.getFabric()));
-                        customizationEntity.setUserEntity(orderEntity.getUserEntity());
-                        userCustomizationRepository.save(customizationEntity);
-
-                        Fabric fabricDetails = orderServiceMappingHelper.extractFabricDetails(customizedAddDataResponse.getFabric());
-                        customizationOrderItem.setProductColor(fabricDetails.getFabricColor());
-                        customizationOrderItem.setProductOfferPercentage(fabricDetails.getProductOfferPercentage());
-                        customizationOrderItem.setProductId(customizationEntity.getUserCustomizationId());
-                        customizationOrderItem.setProductColor((!isNull(customizedAddDataResponse.getFabric()) && customizedAddDataResponse.getFabric().has("fabricColor")) ? customizedAddDataResponse.getFabric().get("fabricColor").asText() : null);
-                        customizationOrderItem.setProductSize(customizedAddDataResponse.getTrueWaistMeasurement());
-                        customizationOrderItem.setUserCustomizationEntity(customizationEntity);
-
-                    }
-                    return customizationOrderItem;
-                })
-                .toList();
-    }
-
     private OrderEntity getNewOrderEntity(OrderRequest orderRequest, UserEntity userEntity) {
         Double orderTotalAmount = orderRequest.getTotalAmount() + (isNull(orderRequest.getLoyaltyPointsToRedeem()) ? 0.0 : orderRequest.getLoyaltyPointsToRedeem());
         OrderEntity orderEntity = new OrderEntity();
@@ -971,25 +868,6 @@ public class OrderServiceImplementation implements OrderService {
             log.error("Error occurred while removing cart items for user: {}, Error: {}", userId, ex.getMessage(), ex);
             return new SuccessResponse(Constants.CART_ITEM_REMOVAL_FAILED, HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
-    }
-
-    private SuccessResponse removeCustomizedItemsFromCart(String userId, List<CustomizationCartResponse> customizationCartResponse) {
-        if (isNull(customizationCartResponse) || customizationCartResponse.isEmpty()) {
-            return new SuccessResponse(Constants.NO_CART_ITEMS_REMOVED, HttpStatus.OK.value());
-        }
-
-        CartEntity cartEntities = cartRepository.findByUserId(userId);
-        List<CustomizedCartItemEntity> customizedCartItemList = cartEntities.getCustomizedCartItemList();
-
-        for (CustomizationCartResponse cartResponse : customizationCartResponse) {
-            CustomizedAddDataResponse newCustomizedData = cartResponse.getCustomizedAddDataResponse();
-            customizedCartItemList.removeIf(customizedCartItem -> serviceImplementation.isSameProduct(customizedCartItem, newCustomizedData));
-        }
-
-        cartEntities.setCustomizedCartItemList(customizedCartItemList);
-        cartRepository.save(cartEntities);
-
-        return new SuccessResponse(Constants.CART_ITEM_DELETED, HttpStatus.OK.value());
     }
 
     private void restoreStock(OrderEntity orderEntity) {

@@ -87,10 +87,10 @@ public class LoyaltyPointsServiceImplementation implements LoyaltyPointsService 
     }
 
     @Transactional
-    public SuccessResponse processOrderLoyaltyPoints(String orderItemId,String userId) {
+    public SuccessResponse processOrderLoyaltyPoints(String orderItemId, String userId) {
 
         Optional<OrderItemEntity> optionalOrderItemEntity = orderItemRepository.findById(orderItemId);
-        if(optionalOrderItemEntity.isEmpty()){
+        if (optionalOrderItemEntity.isEmpty()) {
             throw new OrderItemNotFoundException(Constants.ORDER_ITEM_NOT_FOUND);
         }
 
@@ -101,7 +101,7 @@ public class LoyaltyPointsServiceImplementation implements LoyaltyPointsService 
         UserEntity userEntity = orderItemEntity.getOrderEntity().getUserEntity();
 
         LoyaltyPointsEntity loyaltyPointsEntity = loyaltyPointsRepository.findByUserEntityUserId(userEntity.getUserId());
-        if(isNull(loyaltyPointsEntity)){
+        if (isNull(loyaltyPointsEntity)) {
             loyaltyPointsEntity = new LoyaltyPointsEntity();
             loyaltyPointsEntity.setUserEntity(userEntity);
             loyaltyPointsEntity.setTotalLoyaltyPoints(0.0);
@@ -110,7 +110,7 @@ public class LoyaltyPointsServiceImplementation implements LoyaltyPointsService 
             loyaltyPointsEntity = loyaltyPointsRepository.save(loyaltyPointsEntity);
         }
 
-        processLoyaltyTransaction(loyaltyPoints, LoyaltyTransactionType.PURCHASE, LoyaltyTransactionStatus.PENDING, Constants.LOYALTY_POINTS_CREDITED, loyaltyPointsEntity,orderItemEntity.getOrderItemId());
+        processLoyaltyTransaction(loyaltyPoints, LoyaltyTransactionType.PURCHASE, LoyaltyTransactionStatus.PENDING, Constants.LOYALTY_POINTS_CREDITED, loyaltyPointsEntity, orderItemEntity.getOrderItemId());
 
         return new SuccessResponse(Constants.LOYALTY_POINTS, HttpStatus.OK.value());
     }
@@ -120,7 +120,7 @@ public class LoyaltyPointsServiceImplementation implements LoyaltyPointsService 
 
         LoyaltyPointsEntity loyaltyPointsEntity = loyaltyPointsRepository.findByUserEntityUserId(userId);
 
-        if(isNull(loyaltyPointsEntity)){
+        if (isNull(loyaltyPointsEntity)) {
             throw new ResourceNotFoundException(Constants.LOYALTY_POINTS_NOT_FOUND + userId);
         }
 
@@ -158,7 +158,7 @@ public class LoyaltyPointsServiceImplementation implements LoyaltyPointsService 
         List<OrderItemEntity> orderItems = orderEntity.getOrderItemEntities();
         log.info("Order items details {}", orderItems);
 
-        double actualPointsToRedeem = calculateRedeemablePoints(loyaltyPointsToRedeem,orderEntity);
+        double actualPointsToRedeem = calculateRedeemablePoints(loyaltyPointsToRedeem, orderEntity);
         double pointsPerItem = actualPointsToRedeem / orderItems.size();
 
         loyaltyPointsEntity.setTotalLoyaltyPoints(loyaltyPointsEntity.getTotalLoyaltyPoints() - actualPointsToRedeem);
@@ -172,7 +172,7 @@ public class LoyaltyPointsServiceImplementation implements LoyaltyPointsService 
             orderItem.setRedeemedLoyaltyPoints(pointsPerItem);
             orderItemRepository.save(orderItem);
         }
-        log.info("Loyalty points redeem successful for user: {}",userId);
+        log.info("Loyalty points redeem successful for user: {}", userId);
 
         return new SuccessResponse(Constants.LOYALTY_POINTS_DEBITED, HttpStatus.OK.value());
     }
@@ -180,12 +180,12 @@ public class LoyaltyPointsServiceImplementation implements LoyaltyPointsService 
     @Override
     public SuccessResponse refundPointsForCancelledOrderItem(String userId, String orderId, String orderItemId) {
 
-        OrderEntity orderEntity = orderRepository.findByOrderIdAndUserId(orderId,userId);
+        OrderEntity orderEntity = orderRepository.findByOrderIdAndUserId(orderId, userId);
         if (isNull(orderEntity)) {
             throw new OrderNotFoundException(Constants.ORDER_NOT_FOUND);
         }
 
-        OrderItemEntity orderItem = orderServiceMappingHelper.getOrderItemEntity(orderEntity,orderItemId);
+        OrderItemEntity orderItem = orderServiceMappingHelper.getOrderItemEntity(orderEntity, orderItemId);
 
         Double redeemedLoyaltyPoints = orderItem.getRedeemedLoyaltyPoints();
         if (isNull(redeemedLoyaltyPoints) || redeemedLoyaltyPoints < 0) {
@@ -202,8 +202,8 @@ public class LoyaltyPointsServiceImplementation implements LoyaltyPointsService 
         loyaltyPointsEntity.setLastUpdated(LocalDateTime.now(ZoneId.of(Constants.ZONE)));
         loyaltyPointsRepository.save(loyaltyPointsEntity);
 
-        processLoyaltyTransaction(redeemedLoyaltyPoints, LoyaltyTransactionType.CANCELLATION,LoyaltyTransactionStatus.CREDITED, Constants.LOYALTY_POINTS_CREDITED, loyaltyPointsEntity,orderItemId);
-        log.info("Loyalty points redemption canceled for order-item: {}, refunded points: {}",orderItemId, redeemedLoyaltyPoints);
+        processLoyaltyTransaction(redeemedLoyaltyPoints, LoyaltyTransactionType.CANCELLATION, LoyaltyTransactionStatus.CREDITED, Constants.LOYALTY_POINTS_CREDITED, loyaltyPointsEntity, orderItemId);
+        log.info("Loyalty points redemption canceled for order-item: {}, refunded points: {}", orderItemId, redeemedLoyaltyPoints);
 
         return new SuccessResponse(Constants.LOYALTY_POINTS_CREDITED, HttpStatus.OK.value());
     }
@@ -211,20 +211,20 @@ public class LoyaltyPointsServiceImplementation implements LoyaltyPointsService 
     @Override
     public PointsRedemptionResponse redeemMoneyFromPoints(String userId, Double totalRedeemablePoints) {
 
-        LoyaltyPointsEntity  loyaltyPointsEntity = loyaltyPointsRepository.findByUserEntityUserId(userId);
+        LoyaltyPointsEntity loyaltyPointsEntity = loyaltyPointsRepository.findByUserEntityUserId(userId);
 
-        if(isNull(loyaltyPointsEntity)){
+        if (isNull(loyaltyPointsEntity)) {
             throw new UserNotFoundException(Constants.USER_NOT_FOUND);
         }
 
         Double availablePoints = loyaltyPointsEntity.getTotalLoyaltyPoints();
 
-        if(availablePoints < totalRedeemablePoints || availablePoints < MIN_POINTS_TO_REDEMPTION){
+        if (availablePoints < totalRedeemablePoints || availablePoints < MIN_POINTS_TO_REDEMPTION) {
             throw new ResourceNotFoundException(Constants.INSUFFICIENT_LOYALTY_POINTS);
         }
 
-        processLoyaltyTransaction(totalRedeemablePoints,LoyaltyTransactionType.REDEMPTION,LoyaltyTransactionStatus.PENDING,Constants.LOYALTY_POINTS_REDEEMED,loyaltyPointsEntity,null);
-        return new PointsRedemptionResponse(totalRedeemablePoints,Constants.REDEMPTION_INITIATED,HttpStatus.OK.value());
+        processLoyaltyTransaction(totalRedeemablePoints, LoyaltyTransactionType.REDEMPTION, LoyaltyTransactionStatus.PENDING, Constants.LOYALTY_POINTS_REDEEMED, loyaltyPointsEntity, null);
+        return new PointsRedemptionResponse(totalRedeemablePoints, Constants.REDEMPTION_INITIATED, HttpStatus.OK.value());
     }
 
     @Override
@@ -252,7 +252,7 @@ public class LoyaltyPointsServiceImplementation implements LoyaltyPointsService 
         }
         loyaltyPointsRepository.save(loyaltyPointsEntity);
 
-        processLoyaltyTransaction(pointsToAward,transactionType,LoyaltyTransactionStatus.CREDITED,description,loyaltyPointsEntity,null);
+        processLoyaltyTransaction(pointsToAward, transactionType, LoyaltyTransactionStatus.CREDITED, description, loyaltyPointsEntity, null);
 
     }
 
@@ -262,7 +262,7 @@ public class LoyaltyPointsServiceImplementation implements LoyaltyPointsService 
     }
 
 
-    private void processLoyaltyTransaction(double pointsToChange, LoyaltyTransactionType transactionType, LoyaltyTransactionStatus loyaltyTransactionStatus, String description, LoyaltyPointsEntity loyaltyPointsEntity,String orderItemId) {
+    private void processLoyaltyTransaction(double pointsToChange, LoyaltyTransactionType transactionType, LoyaltyTransactionStatus loyaltyTransactionStatus, String description, LoyaltyPointsEntity loyaltyPointsEntity, String orderItemId) {
 
         LoyaltyPointsTransactionEntity transaction = new LoyaltyPointsTransactionEntity();
         transaction.setLoyaltyTransactionId(generator.generateId(Constants.LOYALTY_TRANSACTION_ID));
@@ -272,7 +272,7 @@ public class LoyaltyPointsServiceImplementation implements LoyaltyPointsService 
         transaction.setDescription(description);
         transaction.setTransactionDate(LocalDateTime.now(ZoneId.of(Constants.ZONE)));
         transaction.setLoyaltyPointsEntity(loyaltyPointsEntity);
-        if(!isNull(orderItemId)){
+        if (!isNull(orderItemId)) {
             transaction.setOrderItemId(orderItemId);
         }
         loyaltyPointsTransactionRepository.save(transaction);
@@ -315,11 +315,6 @@ public class LoyaltyPointsServiceImplementation implements LoyaltyPointsService 
                 .orElseThrow(() -> new OrderItemNotFoundException(Constants.ORDER_ITEM_NOT_FOUND));
 
         response.setOrderItemId(orderItemEntity.getOrderItemId());
-
-        if (isNull(orderItemEntity.getUserCustomizationEntity())) {
-            response.setOrderItemResponse(orderServiceMappingHelper.mapToOrderItemResponse(orderItemEntity));
-        } else {
-            response.setCustomizedCartItemResponse(orderServiceMappingHelper.mapToCustomizedCartItemResponse(orderItemEntity));
-        }
+        response.setOrderItemResponse(orderServiceMappingHelper.mapToOrderItemResponse(orderItemEntity));
     }
 }

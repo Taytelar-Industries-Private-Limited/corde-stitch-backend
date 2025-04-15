@@ -24,7 +24,4 @@ public class CartEntity {
 
     @Field("cart_items")
     private List<CartItemEntity> cartItemEntityList = new ArrayList<>();
-
-    @Field("customized_cart_items")
-    private List<CustomizedCartItemEntity> customizedCartItemList = new ArrayList<>();
 }

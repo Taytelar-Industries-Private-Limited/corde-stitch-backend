@@ -156,8 +156,8 @@ class HomePageServiceImplementationTest {
         subCategoryA.setSubCategoryName("Home Page Collection");
         SubCategory subCategoryB = new SubCategory();
         subCategoryB.setCategory(new Category());
-        subCategoryB.setSubCategoryDescription("Customization Collection festival");
-        subCategoryB.setSubCategoryName("Customization Collection");
+        subCategoryB.setSubCategoryDescription("Collection festival");
+        subCategoryB.setSubCategoryName("Collection");
         subCategoryList.add(subCategoryA);
         subCategoryList.add(subCategoryB);
         subCategoryList.add(getSubCategory());
@@ -239,7 +239,7 @@ class HomePageServiceImplementationTest {
         HomePageEntity homePageB = new HomePageEntity();
         homePageB.setHomePageId("home789");
         homePageB.setHomePageImageUrl("home789.jpg");
-        homePageB.setDescription("Customization Collection");
+        homePageB.setDescription("Collection");
         homePageEntities.add(homePageA);
         homePageEntities.add(homePageB);
         homePageEntities.add(getHomePageEntity());

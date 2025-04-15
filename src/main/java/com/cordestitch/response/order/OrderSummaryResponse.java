@@ -22,8 +22,6 @@ public class OrderSummaryResponse {
 
     private List<OrderItemResponse> orderItemResponse;
 
-    private List<CustomizedCartItemResponse> customizedCartItemResponses;
-
     private AddressResponse addressResponse;
 
     private PaymentResponse paymentResponse;

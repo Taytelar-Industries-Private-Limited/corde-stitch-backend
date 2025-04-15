@@ -2,7 +2,6 @@ package com.cordestitch.response.loyalty;
 
 import com.cordestitch.enums.LoyaltyTransactionStatus;
 import com.cordestitch.enums.LoyaltyTransactionType;
-import com.cordestitch.response.order.CustomizedCartItemResponse;
 import com.cordestitch.response.order.OrderItemResponse;
 import lombok.Data;
 
@@ -26,6 +25,4 @@ public class LoyaltyPointsTransactionResponse {
     private LocalDateTime transactionDate;
 
     private OrderItemResponse orderItemResponse;
-
-    private CustomizedCartItemResponse customizedCartItemResponse;
 }

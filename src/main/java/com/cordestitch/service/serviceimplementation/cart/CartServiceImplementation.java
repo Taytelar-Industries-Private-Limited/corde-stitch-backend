@@ -1,9 +1,7 @@
 package com.cordestitch.service.serviceimplementation.cart;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cordestitch.entity.cart.CartEntity;
 import com.cordestitch.entity.cart.CartItemEntity;
-import com.cordestitch.entity.cart.CustomizedCartItemEntity;
 import com.cordestitch.entity.product.ColorQuantity;
 import com.cordestitch.entity.product.Product;
 import com.cordestitch.entity.product.ProductImage;
@@ -17,8 +15,6 @@ import com.cordestitch.response.SuccessResponse;
 import com.cordestitch.response.cart.CartItemResponse;
 import com.cordestitch.response.cart.CartResponse;
 import com.cordestitch.response.cart.GetCartItemProductDetails;
-import com.cordestitch.response.customization.CustomizationCartResponse;
-import com.cordestitch.response.customization.CustomizedAddDataResponse;
 import com.cordestitch.response.product.ProductDataResponse;
 import com.cordestitch.response.product.ProductImageResponse;
 import com.cordestitch.response.product.ProductResponse;
@@ -45,9 +41,11 @@ import static java.util.Objects.isNull;
 public class CartServiceImplementation implements CartService {
 
     private final CartRepository cartRepository;
+
     private final ProductRepository productRepository;
+
     private final Generator generator;
-    private final ObjectMapper objectMapper;
+
     private final CacheManager cacheManager;
     private static final String PRODUCT_CACHE_NAME = "productsCache";
     private static final String PRODUCT_CACHE_KEY = "listAllProduct";
@@ -158,10 +156,8 @@ public class CartServiceImplementation implements CartService {
         if (!isNull(cartEntity)) {
             cartResponse.setCartId(cartEntity.getCartId());
             cartResponse.setCartItemResponses(cartEntity.getCartItemEntityList() != null && !cartEntity.getCartItemEntityList().isEmpty() ? getCartItemResponse(cartEntity.getCartItemEntityList()) : new ArrayList<>());
-            cartResponse.setCustomizationCartResponses(cartEntity.getCustomizedCartItemList() != null && !cartEntity.getCustomizedCartItemList().isEmpty() ? getCustomizationCartResponse(cartEntity.getCustomizedCartItemList()) : new ArrayList<>());
         } else {
             cartResponse.setCartItemResponses(new ArrayList<>());
-            cartResponse.setCustomizationCartResponses(new ArrayList<>());
         }
         log.info("Get cart items response : {}", cartResponse);
         return cartResponse;
@@ -241,27 +237,6 @@ public class CartServiceImplementation implements CartService {
                     return itemEntity;
                 })
                 .toList();
-    }
-
-    private List<CustomizationCartResponse> getCustomizationCartResponse(List<CustomizedCartItemEntity> customizedCartItemList) {
-        return customizedCartItemList.stream()
-                .map(this::mapToCustomizationCartResponse)
-                .toList();
-    }
-
-    private CustomizationCartResponse mapToCustomizationCartResponse(CustomizedCartItemEntity customizedCartItemEntity) {
-        CustomizationCartResponse customizationCartResponse = new CustomizationCartResponse();
-        customizationCartResponse.setCustomizedCartItemId(customizedCartItemEntity.getCustomizedCartItemId());
-        customizationCartResponse.setQuantity(customizedCartItemEntity.getQuantity());
-        customizationCartResponse.setPrice(customizedCartItemEntity.getPrice());
-        customizationCartResponse.setColor(customizedCartItemEntity.getColor());
-        customizationCartResponse.setColorCode(customizedCartItemEntity.getColorCode());
-        customizationCartResponse.setProductOfferPercentage(customizedCartItemEntity.getProductOfferPercentage());
-        customizationCartResponse.setProductImageUrl(customizedCartItemEntity.getProductImageUrl());
-
-        customizationCartResponse.setCustomizedAddDataResponse(objectMapper.convertValue(customizedCartItemEntity.getCustomizedProductDetails(), CustomizedAddDataResponse.class));
-
-        return customizationCartResponse;
     }
 
     private CartItemEntity convertToCartItemEntity(CartItemRequest cartItemRequest) {
@@ -357,5 +332,4 @@ public class CartServiceImplementation implements CartService {
         }
         return null;
     }
-
 }

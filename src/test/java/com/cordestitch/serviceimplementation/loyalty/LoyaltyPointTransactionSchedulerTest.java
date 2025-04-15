@@ -173,7 +173,6 @@ class LoyaltyPointTransactionSchedulerTest {
         userEntity.setPhoneNumberVerified(true);
         userEntity.setAddressEntityList(List.of(new AddressEntity()));
         userEntity.setCardEntities(List.of(new CardEntity()));
-        userEntity.setUserCustomizationEntityList(new ArrayList<>());
         userEntity.setLoyaltyPointsEntity(new LoyaltyPointsEntity());
         return userEntity;
     }

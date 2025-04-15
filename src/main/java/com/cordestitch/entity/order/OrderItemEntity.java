@@ -1,6 +1,5 @@
 package com.cordestitch.entity.order;
 
-import com.cordestitch.entity.customization.UserCustomizationEntity;
 import com.cordestitch.entity.payment.RefundEntity;
 import com.cordestitch.enums.DeliveryStatus;
 import com.cordestitch.enums.OrderStatus;
@@ -89,14 +88,7 @@ public class OrderItemEntity {
     @ToString.Exclude
     private OrderEntity orderEntity;
 
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_customization_id", referencedColumnName = "user_customization_id")
-    @ToString.Exclude
-    private UserCustomizationEntity userCustomizationEntity;
-
     @OneToMany(mappedBy = "orderItemEntity", fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<RefundEntity> refundEntities;
-
 }

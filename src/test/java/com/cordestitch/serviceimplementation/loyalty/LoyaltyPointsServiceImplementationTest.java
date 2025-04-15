@@ -1,6 +1,5 @@
 package com.cordestitch.serviceimplementation.loyalty;
 
-import com.cordestitch.entity.customization.UserCustomizationEntity;
 import com.cordestitch.entity.loyalty.LoyaltyPointsEntity;
 import com.cordestitch.entity.loyalty.LoyaltyPointsTransactionEntity;
 import com.cordestitch.entity.order.OrderEntity;
@@ -26,7 +25,6 @@ import com.cordestitch.repository.product.ProductRepository;
 import com.cordestitch.repository.user.UserRepository;
 import com.cordestitch.response.SuccessResponse;
 import com.cordestitch.response.loyalty.LoyaltyPointsResponse;
-import com.cordestitch.response.order.CustomizedCartItemResponse;
 import com.cordestitch.response.order.OrderItemResponse;
 import com.cordestitch.service.serviceimplementation.loyalty.LoyaltyPointsServiceImplementation;
 import com.cordestitch.service.serviceimplementation.order.OrderServiceMappingHelper;
@@ -204,13 +202,11 @@ class LoyaltyPointsServiceImplementationTest {
     void getLoyaltyPointsSummary_Success_With_OrderItemId(){
         String userId = DECRYPTED_USER_ID;
         OrderItemEntity orderItem = getOrderItemEntity();
-        orderItem.setUserCustomizationEntity(new UserCustomizationEntity());
         LoyaltyPointsTransactionEntity loyaltyPointsTransactionEntity = new LoyaltyPointsTransactionEntity();
         loyaltyPointsTransactionEntity.setOrderItemId("OID123");
         when(loyaltyPointsRepository.findByUserEntityUserId(userId)).thenReturn(getLoyaltyPointsEntity());
         when(loyaltyPointsTransactionRepository.findTransactionsByLoyaltyId(any())).thenReturn(List.of(loyaltyPointsTransactionEntity));
         when(orderItemRepository.findById(any())).thenReturn(Optional.of(orderItem));
-        when(orderServiceMappingHelper.mapToCustomizedCartItemResponse(any())).thenReturn(new CustomizedCartItemResponse());
         LoyaltyPointsResponse loyaltyPointsResponse = loyaltyPointsServiceImplementation.getLoyaltyPointsSummary(userId);
         assertNotNull(loyaltyPointsResponse);
     }
@@ -254,12 +250,9 @@ class LoyaltyPointsServiceImplementationTest {
     @Test
     void getLoyaltyPointsSummary_Success_When_LoyaltyPointsTransactionEntity_And_UserCustomizationEntity_Are_Not_Null(){
         String userId = DECRYPTED_USER_ID;
-        OrderItemEntity orderItemEntity = getOrderItemEntity();
-        orderItemEntity.setUserCustomizationEntity(new UserCustomizationEntity());
         LoyaltyPointsTransactionEntity loyaltyPointsTransactionEntity = new LoyaltyPointsTransactionEntity();
         when(loyaltyPointsRepository.findByUserEntityUserId(userId)).thenReturn(getLoyaltyPointsEntity());
         when(loyaltyPointsTransactionRepository.findTransactionsByLoyaltyId(any())).thenReturn(List.of(loyaltyPointsTransactionEntity));
-        doReturn(new CustomizedCartItemResponse()).when(orderServiceMappingHelper).mapToCustomizedCartItemResponse(orderItemEntity);
         when(productRepository.findByProductId(getOrderItemEntity().getProductId())).thenReturn(Optional.of(new Product()));
         LoyaltyPointsResponse loyaltyPointsResponse = loyaltyPointsServiceImplementation.getLoyaltyPointsSummary(userId);
         assertNotNull(loyaltyPointsResponse);
@@ -468,7 +461,6 @@ class LoyaltyPointsServiceImplementationTest {
         userEntity.setPhoneNumberVerified(true);
         userEntity.setAddressEntityList(List.of(new AddressEntity()));
         userEntity.setCardEntities(List.of(new CardEntity()));
-        userEntity.setUserCustomizationEntityList(new ArrayList<>());
         userEntity.setLoyaltyPointsEntity(new LoyaltyPointsEntity());
         return userEntity;
     }

@@ -3,7 +3,6 @@ package com.cordestitch.exception;
 import com.cordestitch.exception.affiliate.FailedToSendOtpException;
 import com.cordestitch.exception.cart.CartItemNotFoundException;
 import com.cordestitch.exception.cart.SessionExpiredException;
-import com.cordestitch.exception.customization.*;
 import com.cordestitch.exception.faqs.FaqsAlreadyExistException;
 import com.cordestitch.exception.filter.EncryptionException;
 import com.cordestitch.exception.order.*;
@@ -129,32 +128,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()));
     }
 
-    @ExceptionHandler(CustomizationTypeAlreadyExistException.class)
-    public ResponseEntity<ErrorResponse> handleCustomizationTypeAlreadyExistException(CustomizationTypeAlreadyExistException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value()));
-    }
-
-    @ExceptionHandler(ConvertToJsonException.class)
-    public ResponseEntity<ErrorResponse> handleConvertToJsonException(ConvertToJsonException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()));
-    }
-
-    @ExceptionHandler(ConvertFromJsonException.class)
-    public ResponseEntity<ErrorResponse> handleConvertFromJsonException(ConvertFromJsonException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()));
-    }
-    @ExceptionHandler(CustomizationNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleCustomizationTypeNotFoundException(CustomizationNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value()));
-    }
-    @ExceptionHandler(FabricNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleFabricNotFoundException(FabricNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value()));
-    }
-
-
-
-
     @ExceptionHandler(OrderCancellationException.class)
     public ResponseEntity<ErrorResponse> handleOrderCancellationException(OrderCancellationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value()));
@@ -178,8 +151,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleReturnException(ReturnException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN.value()));
     }
-
-
 
     @ExceptionHandler(DataCheckReflectionException.class)
     public ResponseEntity<ErrorResponse> handleDataCheckReflectionException(DataCheckReflectionException ex) {

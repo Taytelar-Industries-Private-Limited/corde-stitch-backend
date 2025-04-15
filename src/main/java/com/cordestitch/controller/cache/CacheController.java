@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CacheController {
 
-
     private final CacheServiceImplementation cacheServiceImplementation;
     /**
      * Endpoint to flush the cache and this is only for the testing purpose in dev environment.

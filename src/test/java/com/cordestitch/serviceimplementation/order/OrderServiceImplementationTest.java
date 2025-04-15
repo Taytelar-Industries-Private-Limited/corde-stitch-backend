@@ -2,13 +2,7 @@ package com.cordestitch.serviceimplementation.order;
 
 import com.cordestitch.service.serviceimplementation.order.OrderServiceImplementation;
 import com.cordestitch.service.serviceimplementation.order.OrderServiceMappingHelper;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.cordestitch.entity.cart.CartEntity;
-import com.cordestitch.entity.cart.CartItemEntity;
-import com.cordestitch.entity.cart.CustomizedCartItemEntity;
-import com.cordestitch.entity.customization.Fabric;
-import com.cordestitch.entity.customization.UserCustomizationEntity;
 import com.cordestitch.entity.order.OrderEntity;
 import com.cordestitch.entity.order.OrderItemEntity;
 import com.cordestitch.entity.payment.CardEntity;
@@ -25,7 +19,6 @@ import com.cordestitch.exception.user.AddressNotFoundException;
 import com.cordestitch.exception.user.UserNotFoundException;
 import com.cordestitch.filter.IdEncryptor;
 import com.cordestitch.repository.cart.CartRepository;
-import com.cordestitch.repository.customization.UserCustomizationRepository;
 import com.cordestitch.repository.order.OrderItemRepository;
 import com.cordestitch.repository.order.OrderRepository;
 import com.cordestitch.repository.order.ReturnRepository;
@@ -41,15 +34,12 @@ import com.cordestitch.request.order.OrderRequest;
 import com.cordestitch.request.order.ReturnRequest;
 import com.cordestitch.request.user.AddressRequest;
 import com.cordestitch.response.SuccessResponse;
-import com.cordestitch.response.customization.CustomizationCartResponse;
-import com.cordestitch.response.customization.CustomizedAddDataResponse;
 import com.cordestitch.response.order.*;
 import com.cordestitch.response.product.*;
 import com.cordestitch.response.review.ProductReviewResponse;
 import com.cordestitch.service.service.loyalty.LoyaltyPointsService;
 import com.cordestitch.service.service.review.ReviewService;
 import com.cordestitch.service.service.whatsapp.WhatsAppService;
-import com.cordestitch.service.serviceimplementation.customization.UserCustomizationServiceImplementation;
 import com.cordestitch.service.serviceimplementation.payment.PaymentServiceImpl;
 import com.cordestitch.util.Constants;
 import com.cordestitch.util.Generator;
@@ -124,9 +114,6 @@ class OrderServiceImplementationTest {
     private OrderServiceMappingHelper orderServiceMappingHelper;
 
     @Mock
-    private UserCustomizationRepository userCustomizationRepository;
-
-    @Mock
     private ObjectMapper objectMapper;
 
     @Mock
@@ -134,9 +121,6 @@ class OrderServiceImplementationTest {
 
     @Mock
     private CartRepository cartRepository;
-
-    @Mock
-    private UserCustomizationServiceImplementation serviceImplementation;
 
     @Mock
     private ReviewService reviewService;
@@ -216,172 +200,12 @@ class OrderServiceImplementationTest {
         assertEquals(Constants.ORDER_PLACED_SUCCESSFULLY, placeAnOrderResponse.getMessage());
     }
 
-    @Test
-    void placeOrder_Success_When_OrderItemRequest_Quantity_Is_Less_Than_ColorQuantity() {
-        OrderRequest orderRequest = getOrderRequest();
-        orderRequest.getOrderItemRequests().getFirst().setQuantity(2);
-        orderRequest.setCustomizationCartResponse(getCustomizationCartResponse());
-        UserEntity userEntity = getUserEntity();
-        Optional<Product> optionalProduct = getProduct();
-        ProductResponse cachedProductResponse = new ProductResponse();
-        cachedProductResponse.setCategoryResponses(List.of(getCategoryResponse()));
-        when(userRepository.findUserByUserId(any())).thenReturn(userEntity);
-        when(addressRepository.findByUserEntityUserIdAndAddressId(any(), any())).thenReturn(new AddressEntity());
-        when(productRepository.findById(any())).thenReturn(optionalProduct);
-        when(cacheManager.getCache(PRODUCTS_CACHE_NAME)).thenReturn(cache);
-        when(cache.get(PRODUCT_CACHE_KEY,ProductResponse.class)).thenReturn(cachedProductResponse);
-        when(cache.get(PRODUCT_CACHE_KEY)).thenReturn(valueWrapper);
-        when(valueWrapper.get()).thenReturn(cachedProductResponse);
-        when(userCustomizationRepository.save(any(UserCustomizationEntity.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(orderItemRepository.save(any(OrderItemEntity.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(orderServiceMappingHelper.extractFabricDetails(any())).thenReturn(getFabric());
-        when(cartRepository.deleteItemsByDetails(any(), any(), any(), any(), any(), any())).thenReturn(1L);
-        when(cartRepository.findByUserId(anyString())).thenReturn(getCartEntity());
-        when(serviceImplementation.isSameProduct(any(), any())).thenReturn(true);
 
-        PlaceAnOrderResponse placeAnOrderResponse = orderServiceImplementation.placeAnOrder(orderRequest);
-        assertEquals(Constants.ORDER_PLACED_SUCCESSFULLY, placeAnOrderResponse.getMessage());
-    }
-
-    @Test
-    void placeOrder_Success_When_CachedProductResponse_Is_Not_Null_With_OrderItem_Null() {
-        OrderRequest orderRequest = getOrderRequest();
-        orderRequest.setOrderItemRequests(null);
-        orderRequest.setCustomizationCartResponse(getCustomizationCartResponse());
-        UserEntity userEntity = getUserEntity();
-        Optional<Product> optionalProduct = getProduct();
-        ProductResponse cachedProductResponse = new ProductResponse();
-        cachedProductResponse.setCategoryResponses(List.of(getCategoryResponse()));
-        when(userRepository.findUserByUserId(any())).thenReturn(userEntity);
-        when(addressRepository.findByUserEntityUserIdAndAddressId(any(), any())).thenReturn(new AddressEntity());
-        when(productRepository.findById(any())).thenReturn(optionalProduct);
-        when(cacheManager.getCache(PRODUCTS_CACHE_NAME)).thenReturn(cache);
-        when(cache.get(PRODUCT_CACHE_KEY)).thenReturn(valueWrapper);
-        when(valueWrapper.get()).thenReturn(cachedProductResponse);
-        when(userCustomizationRepository.save(any(UserCustomizationEntity.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(orderItemRepository.save(any(OrderItemEntity.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(orderServiceMappingHelper.extractFabricDetails(any())).thenReturn(getFabric());
-        when(cartRepository.findByUserId(anyString())).thenReturn(getCartEntity());
-        when(serviceImplementation.isSameProduct(any(), any())).thenReturn(true);
-
-        PlaceAnOrderResponse placeAnOrderResponse = orderServiceImplementation.placeAnOrder(orderRequest);
-        assertEquals(Constants.ORDER_PLACED_SUCCESSFULLY, placeAnOrderResponse.getMessage());
-    }
-
-    @Test
-    void placeOrder_Success_When_CachedProductResponse_Is_Not_Null_With_CustomizedAddDataResponse_Is_Null() {
-        OrderRequest orderRequest = getOrderRequest();
-        orderRequest.setOrderItemRequests(null);
-       List<CustomizationCartResponse> cartResponse = getCustomizationCartResponse();
-        cartResponse.getFirst().setCustomizedAddDataResponse(null);
-        orderRequest.setCustomizationCartResponse(cartResponse);
-        UserEntity userEntity = getUserEntity();
-        Optional<Product> optionalProduct = getProduct();
-        ProductResponse cachedProductResponse = new ProductResponse();
-        cachedProductResponse.setCategoryResponses(List.of(getCategoryResponse()));
-        when(userRepository.findUserByUserId(any())).thenReturn(userEntity);
-        when(addressRepository.findByUserEntityUserIdAndAddressId(any(), any())).thenReturn(new AddressEntity());
-        when(productRepository.findById(any())).thenReturn(optionalProduct);
-        when(cacheManager.getCache(PRODUCTS_CACHE_NAME)).thenReturn(cache);
-        when(cache.get(PRODUCT_CACHE_KEY)).thenReturn(valueWrapper);
-        when(valueWrapper.get()).thenReturn(cachedProductResponse);
-        when(userCustomizationRepository.save(any(UserCustomizationEntity.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(orderItemRepository.save(any(OrderItemEntity.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(orderServiceMappingHelper.extractFabricDetails(any())).thenReturn(getFabric());
-        when(cartRepository.findByUserId(anyString())).thenReturn(getCartEntity());
-        when(serviceImplementation.isSameProduct(any(), any())).thenReturn(true);
-
-        PlaceAnOrderResponse placeAnOrderResponse = orderServiceImplementation.placeAnOrder(orderRequest);
-        assertEquals(Constants.ORDER_PLACED_SUCCESSFULLY, placeAnOrderResponse.getMessage());
-    }
-
-    @Test
-    void placeOrder_Success_When_CachedProductResponse_Is_Not_Null_When_OrderItem_Empty() {
-        OrderRequest orderRequest = getOrderRequest();
-        orderRequest.setOrderItemRequests(new ArrayList<>());
-        orderRequest.setCustomizationCartResponse(getCustomizationCartResponse());
-        UserEntity userEntity = getUserEntity();
-        Optional<Product> optionalProduct = getProduct();
-        ProductResponse cachedProductResponse = new ProductResponse();
-        cachedProductResponse.setCategoryResponses(List.of(getCategoryResponse()));
-        when(userRepository.findUserByUserId(any())).thenReturn(userEntity);
-        when(addressRepository.findByUserEntityUserIdAndAddressId(any(), any())).thenReturn(new AddressEntity());
-        when(productRepository.findById(any())).thenReturn(optionalProduct);
-        when(cacheManager.getCache(PRODUCTS_CACHE_NAME)).thenReturn(cache);
-        when(cache.get(PRODUCT_CACHE_KEY)).thenReturn(valueWrapper);
-        when(valueWrapper.get()).thenReturn(cachedProductResponse);
-        when(userCustomizationRepository.save(any(UserCustomizationEntity.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(orderItemRepository.save(any(OrderItemEntity.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(orderServiceMappingHelper.extractFabricDetails(any())).thenReturn(getFabric());
-        when(cartRepository.findByUserId(anyString())).thenReturn(getCartEntity());
-        when(serviceImplementation.isSameProduct(any(), any())).thenReturn(true);
-
-        PlaceAnOrderResponse placeAnOrderResponse = orderServiceImplementation.placeAnOrder(orderRequest);
-        assertEquals(Constants.ORDER_PLACED_SUCCESSFULLY, placeAnOrderResponse.getMessage());
-    }
-
-    @Test
-    void placeOrder_Success_When_CachedProductResponse_Is_Not_Null_When_OrderItem_Not_Null() {
-        OrderRequest orderRequest = getOrderRequest();
-        orderRequest.setOrderItemRequests(getListOrderItemRequest());
-        UserEntity userEntity = getUserEntity();
-        Optional<Product> optionalProduct = getProduct();
-        ProductResponse cachedProductResponse = new ProductResponse();
-        cachedProductResponse.setCategoryResponses(List.of(getCategoryResponse()));
-        when(userRepository.findUserByUserId(any())).thenReturn(userEntity);
-        when(addressRepository.findByUserEntityUserIdAndAddressId(any(), any())).thenReturn(new AddressEntity());
-        when(productRepository.findById(any())).thenReturn(optionalProduct);
-        when(cacheManager.getCache(PRODUCTS_CACHE_NAME)).thenReturn(cache);
-        when(cache.get(PRODUCT_CACHE_KEY)).thenReturn(valueWrapper);
-        when(valueWrapper.get()).thenReturn(cachedProductResponse);
-        when(userCustomizationRepository.save(any(UserCustomizationEntity.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(orderItemRepository.save(any(OrderItemEntity.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(orderServiceMappingHelper.extractFabricDetails(any())).thenReturn(getFabric());
-
-        PlaceAnOrderResponse placeAnOrderResponse = orderServiceImplementation.placeAnOrder(orderRequest);
-        assertEquals(Constants.ORDER_PLACED_SUCCESSFULLY, placeAnOrderResponse.getMessage());
-    }
-
-    @Test
-    void placeOrder_Success_When_CustomizationCartEntity_Is_Empty() {
-        OrderRequest orderRequest = getOrderRequest();
-        orderRequest.setOrderItemRequests(getListOrderItemRequest());
-        orderRequest.setCustomizationCartResponse(List.of());
-        UserEntity userEntity = getUserEntity();
-        Optional<Product> optionalProduct = getProduct();
-        ProductResponse cachedProductResponse = new ProductResponse();
-        cachedProductResponse.setCategoryResponses(List.of(getCategoryResponse()));
-        when(userRepository.findUserByUserId(any())).thenReturn(userEntity);
-        when(addressRepository.findByUserEntityUserIdAndAddressId(any(), any())).thenReturn(new AddressEntity());
-        when(productRepository.findById(any())).thenReturn(optionalProduct);
-        when(cacheManager.getCache(PRODUCTS_CACHE_NAME)).thenReturn(cache);
-        when(cache.get(PRODUCT_CACHE_KEY)).thenReturn(valueWrapper);
-        when(valueWrapper.get()).thenReturn(cachedProductResponse);
-        when(userCustomizationRepository.save(any(UserCustomizationEntity.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(orderItemRepository.save(any(OrderItemEntity.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(orderServiceMappingHelper.extractFabricDetails(any())).thenReturn(getFabric());
-
-        PlaceAnOrderResponse placeAnOrderResponse = orderServiceImplementation.placeAnOrder(orderRequest);
-        assertEquals(Constants.ORDER_PLACED_SUCCESSFULLY, placeAnOrderResponse.getMessage());
-    }
 
     @Test
     void placeOrder_Success_When_CachedProductResponse_Is_Not_Null_With_OrderItem_Empty() {
         OrderRequest orderRequest = getOrderRequest();
         orderRequest.setOrderItemRequests(new ArrayList<>());
-        orderRequest.setCustomizationCartResponse(List.of());
         OrderItemNotFoundException exception = assertThrows(OrderItemNotFoundException.class, ()->orderServiceImplementation.placeAnOrder(orderRequest));
         assertEquals(Constants.ORDER_ITEM_NOT_FOUND, exception.getMessage());
     }
@@ -389,54 +213,9 @@ class OrderServiceImplementationTest {
     @Test
     void placeOrder_Success_When_CachedProductResponse_Is_Null_With_OrderItem_Empty() {
         OrderRequest orderRequest = getOrderRequest();
-        orderRequest.setOrderItemRequests(new ArrayList<>());
+        orderRequest.setOrderItemRequests(null);
         OrderItemNotFoundException exception = assertThrows(OrderItemNotFoundException.class, ()->orderServiceImplementation.placeAnOrder(orderRequest));
         assertEquals(Constants.ORDER_ITEM_NOT_FOUND, exception.getMessage());
-    }
-
-    private Fabric getFabric() {
-        Fabric fabric = new Fabric();
-        fabric.setFabricId("FabricId1");
-        fabric.setFabricColorCode("#000000");
-        fabric.setFabricDescription("cotton");
-        fabric.setImageUrl(List.of("FabricImg1", "FabricImg2"));
-        fabric.setFabricColor("white");
-        fabric.setFabricPrice(100.0);
-        fabric.setProductOfferPercentage(5.0);
-        return fabric;
-    }
-
-    private List<CustomizationCartResponse> getCustomizationCartResponse() {
-        List<CustomizationCartResponse> customizationCartResponses = new ArrayList<>();
-        CustomizationCartResponse cartResponse = new CustomizationCartResponse();
-        cartResponse.setCustomizedCartItemId("c1");
-        cartResponse.setColor("black");
-        cartResponse.setPrice(1499.99);
-        cartResponse.setQuantity(1);
-        cartResponse.setCustomizedAddDataResponse(getCustomizedAddResponse());
-        customizationCartResponses.add(cartResponse);
-        return customizationCartResponses;
-    }
-
-    private CustomizedAddDataResponse getCustomizedAddResponse() {
-        CustomizedAddDataResponse response = new CustomizedAddDataResponse();
-        response.setPantType("formal");
-        response.setTrueWaistMeasurement(30);
-        response.setPantInSeamLength(28);
-        response.setPantOutSeamLength(38);
-        response.setFitType("slimfit");
-        response.setRiseType("midRaise");
-        response.setFrontPocketType("normal");
-        response.setBackPocketType("normal");
-        response.setFrontButtonType("round");
-        response.setBackButtonType("round");
-        response.setPantPleatType("pleat");
-        response.setFlyType("butterfly");
-        response.setPantCuffsType("ribbon");
-        String fabricDetailsJson = "{ \"material\": \"cotton\", \"weight\": \"light\", \"color\": \"blue\" }";
-        JsonNode fabricDetails = objectMapper.valueToTree(fabricDetailsJson);
-        response.setFabric(fabricDetails);
-        return response;
     }
 
     private CategoryResponse getCategoryResponse() {
@@ -1041,7 +820,6 @@ class OrderServiceImplementationTest {
         OrderEntity orderEntity = getOrderEntity();
         orderEntity.getOrderItemEntities().getFirst().setDeliveryDate(null);
         orderEntity.getOrderItemEntities().getFirst().setDeliveryStatus(DeliveryStatus.DELIVERED);
-        orderEntity.getOrderItemEntities().getFirst().setUserCustomizationEntity(new UserCustomizationEntity());
         Optional<List<OrderEntity>> optionalOrderEntities = Optional.of(List.of(orderEntity));
         when(orderRepository.findByUserEntityUserId(any())).thenReturn(optionalOrderEntities);
         when(productRepository.findByProductId(any())).thenReturn(getProduct());
@@ -1056,7 +834,6 @@ class OrderServiceImplementationTest {
         OrderEntity orderEntity = getOrderEntity();
         orderEntity.getOrderItemEntities().getFirst().setReturnDaysPolicy(null);
         orderEntity.getOrderItemEntities().getFirst().setDeliveryStatus(DeliveryStatus.DELIVERED);
-        orderEntity.getOrderItemEntities().getFirst().setUserCustomizationEntity(new UserCustomizationEntity());
         Optional<List<OrderEntity>> optionalOrderEntities = Optional.of(List.of(orderEntity));
         when(orderRepository.findByUserEntityUserId(any())).thenReturn(optionalOrderEntities);
         when(productRepository.findByProductId(any())).thenReturn(getProduct());
@@ -1107,7 +884,6 @@ class OrderServiceImplementationTest {
     @Test
     void testGetOrderDetailsByOrderId_When_Product_IsEmpty() {
         OrderEntity orderEntity = getOrderEntity();
-        orderEntity.getOrderItemEntities().getFirst().setUserCustomizationEntity(new UserCustomizationEntity());
         when(orderRepository.findById(any())).thenReturn(Optional.of(orderEntity));
         when(productRepository.findByProductId(anyString())).thenReturn(Optional.empty());
         when(addressRepository.findById(any())).thenReturn(getAddressEntity());
@@ -1367,49 +1143,4 @@ class OrderServiceImplementationTest {
 
         return productDataResponses;
     }
-
-    private CartEntity getCartEntity() {
-        CartEntity cartEntity = new CartEntity();
-        cartEntity.setCartId("cart1");
-        cartEntity.setUserId("user1");
-        cartEntity.setCartItemEntityList(getCartItemEntity());
-        cartEntity.setCustomizedCartItemList(getCustomizedCartItemEntityList());
-        return cartEntity;
-    }
-
-    private List<CustomizedCartItemEntity> getCustomizedCartItemEntityList() {
-        List<CustomizedCartItemEntity> customizedCartItemEntities=new ArrayList<>();
-        CustomizedCartItemEntity cartItemEntity=new CustomizedCartItemEntity();
-        cartItemEntity.setCustomizedCartItemId("customizedCartItem1");
-        cartItemEntity.setPrice(10.00);
-        cartItemEntity.setQuantity(2);
-        cartItemEntity.setProductImageUrl("img.com");
-        cartItemEntity.setProductOfferPercentage(5.0);
-        cartItemEntity.setCustomizedProductDetails(getCustomizedProductDetails());
-        customizedCartItemEntities.add(cartItemEntity);
-        return customizedCartItemEntities;
-    }
-
-    private Map<String, Object> getCustomizedProductDetails() {
-        Map<String, Object> customizedProductDetails = new HashMap<>();
-        customizedProductDetails.put("size", 1);
-        customizedProductDetails.put("color", "white");
-        customizedProductDetails.put("material", "cotton");
-        return customizedProductDetails;
-    }
-    private List<CartItemEntity> getCartItemEntity() {
-        List<CartItemEntity> cartItemEntities = new ArrayList<>();
-        CartItemEntity cartItemEntity = new CartItemEntity();
-        cartItemEntity.setCartItemId("cartItem1");
-        cartItemEntity.setPrice(10.00);
-        cartItemEntity.setProductColor("white");
-        cartItemEntity.setProductColorCode("#000000");
-        cartItemEntity.setProductId("product1");
-        cartItemEntity.setProductName("shirt");
-        cartItemEntity.setProductSize(1);
-        cartItemEntity.setQuantity(1);
-        cartItemEntities.add(cartItemEntity);
-        return cartItemEntities;
-    }
-
 }

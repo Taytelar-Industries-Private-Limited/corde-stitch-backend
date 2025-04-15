@@ -4,7 +4,6 @@ import com.cordestitch.service.serviceimplementation.cart.CartServiceImplementat
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cordestitch.entity.cart.CartEntity;
 import com.cordestitch.entity.cart.CartItemEntity;
-import com.cordestitch.entity.cart.CustomizedCartItemEntity;
 import com.cordestitch.entity.product.*;
 import com.cordestitch.exception.cart.CartItemNotFoundException;
 import com.cordestitch.repository.cart.CartRepository;
@@ -13,8 +12,6 @@ import com.cordestitch.request.cart.CartItemRequest;
 import com.cordestitch.request.cart.CartRequest;
 import com.cordestitch.response.SuccessResponse;
 import com.cordestitch.response.cart.CartResponse;
-import com.cordestitch.response.customization.CustomizationCartResponse;
-import com.cordestitch.response.customization.CustomizedAddDataResponse;
 import com.cordestitch.util.Constants;
 import com.cordestitch.util.Generator;
 import org.junit.jupiter.api.Assertions;
@@ -221,46 +218,6 @@ class CartServiceImplementationTest {
     }
 
     @Test
-    void getCartItems_When_CartEntity_Is_Not_Null() {
-        String userId = "user1";
-        CartEntity cartEntity = getCartEntity();
-        CustomizedCartItemEntity customizedCartItemEntity=getCustomizedCartItemEntity();
-        CustomizationCartResponse customizationCartResponse=new CustomizationCartResponse();
-        when(cartRepository.findByUserId(any())).thenReturn(cartEntity);
-        when(objectMapper.convertValue(customizedCartItemEntity.getCustomizedProductDetails(),CustomizedAddDataResponse.class)).thenReturn(customizationCartResponse.getCustomizedAddDataResponse());
-        CartResponse cartResponse = cartServiceImplementation.getCartItems(userId);
-        assertEquals("cart1", cartResponse.getCartId(), "cart1");
-    }
-
-    @Test
-    void getCartItems_When_CartEntity_Is_Not_Null_With_CartItemEntityList_And_CustomizedCartItemList_Are_Null() {
-        String userId = "user1";
-        CartEntity cartEntity = getCartEntity();
-        cartEntity.setCartItemEntityList(null);
-        cartEntity.setCustomizedCartItemList(null);
-        CustomizedCartItemEntity customizedCartItemEntity=getCustomizedCartItemEntity();
-        CustomizationCartResponse customizationCartResponse=new CustomizationCartResponse();
-        when(cartRepository.findByUserId(any())).thenReturn(cartEntity);
-        when(objectMapper.convertValue(customizedCartItemEntity.getCustomizedProductDetails(),CustomizedAddDataResponse.class)).thenReturn(customizationCartResponse.getCustomizedAddDataResponse());
-        CartResponse cartResponse = cartServiceImplementation.getCartItems(userId);
-        assertEquals("cart1", cartResponse.getCartId(), "cart1");
-    }
-
-    @Test
-    void getCartItems_When_CartEntity_Is_Not_Null_With_CartItemEntityList_And_CustomizedCartItemList_Are_Empty() {
-        String userId = "user1";
-        CartEntity cartEntity = getCartEntity();
-        cartEntity.setCartItemEntityList(new ArrayList<>());
-        cartEntity.setCustomizedCartItemList(new ArrayList<>());
-        CustomizedCartItemEntity customizedCartItemEntity=getCustomizedCartItemEntity();
-        CustomizationCartResponse customizationCartResponse=new CustomizationCartResponse();
-        when(cartRepository.findByUserId(any())).thenReturn(cartEntity);
-        when(objectMapper.convertValue(customizedCartItemEntity.getCustomizedProductDetails(),CustomizedAddDataResponse.class)).thenReturn(customizationCartResponse.getCustomizedAddDataResponse());
-        CartResponse cartResponse = cartServiceImplementation.getCartItems(userId);
-        assertEquals("cart1", cartResponse.getCartId(), "cart1");
-    }
-
-    @Test
     void testGetCartItems_Success_WhenProductIsEmpty() {
         String userId = "user1";
         when(cartRepository.findByUserId(any())).thenReturn(getCartEntity());
@@ -314,17 +271,6 @@ class CartServiceImplementationTest {
         when(productRepository.findByProductId(any())).thenReturn(Optional.of(product));
         CartResponse response = cartServiceImplementation.getCartItems(userId);
         assertEquals("cart1", response.getCartId(), "cart1");
-    }
-
-    private CustomizedCartItemEntity getCustomizedCartItemEntity() {
-        CustomizedCartItemEntity cartItemEntity=new CustomizedCartItemEntity();
-        cartItemEntity.setCustomizedCartItemId("customizedCartItem1");
-        cartItemEntity.setPrice(10.00);
-        cartItemEntity.setQuantity(2);
-        cartItemEntity.setProductImageUrl("img.com");
-        cartItemEntity.setProductOfferPercentage(5.0);
-        cartItemEntity.setCustomizedProductDetails(getCustomizedProductDetails());
-        return cartItemEntity;
     }
 
     private Optional<Product> getProductOptional() {
@@ -393,29 +339,7 @@ class CartServiceImplementationTest {
         cartEntity.setCartId("cart1");
         cartEntity.setUserId("user1");
         cartEntity.setCartItemEntityList(getCartItemEntity());
-        cartEntity.setCustomizedCartItemList(getCustomizedCartItemEntityList());
         return cartEntity;
-    }
-
-    private List<CustomizedCartItemEntity> getCustomizedCartItemEntityList() {
-        List<CustomizedCartItemEntity> customizedCartItemEntities=new ArrayList<>();
-        CustomizedCartItemEntity cartItemEntity=new CustomizedCartItemEntity();
-        cartItemEntity.setCustomizedCartItemId("customizedCartItem1");
-        cartItemEntity.setPrice(10.00);
-        cartItemEntity.setQuantity(2);
-        cartItemEntity.setProductImageUrl("img.com");
-        cartItemEntity.setProductOfferPercentage(5.0);
-        cartItemEntity.setCustomizedProductDetails(getCustomizedProductDetails());
-        customizedCartItemEntities.add(cartItemEntity);
-        return customizedCartItemEntities;
-    }
-
-    private Map<String, Object> getCustomizedProductDetails() {
-        Map<String, Object> customizedProductDetails = new HashMap<>();
-        customizedProductDetails.put("size", 1);
-        customizedProductDetails.put("color", "white");
-        customizedProductDetails.put("material", "cotton");
-        return customizedProductDetails;
     }
 
     private List<CartItemEntity> getCartItemEntity() {

@@ -1,6 +1,5 @@
 package com.cordestitch.config;
 
-import com.cordestitch.service.service.customization.CustomizationService;
 import com.cordestitch.service.service.homepage.HomePageService;
 import com.cordestitch.service.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -8,25 +7,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.function.Supplier;
 
 import static java.util.Objects.isNull;
 
-@Service
+@Component
 @Slf4j
 @RequiredArgsConstructor
 public class CacheRefreshScheduler {
 
     private final CacheManager cacheManager;
+
     private final ProductService productService;
-    private final CustomizationService customizationService;
+
     private final HomePageService homePageService;
 
     private static final String PRODUCT_CACHE = "productsCache";
-    private static final String CUSTOMIZATION_CACHE = "customizationCache";
 
     @Scheduled(cron = "0 0 0 * * *")
     public void refreshGetAllProductCache() {
@@ -36,13 +35,6 @@ public class CacheRefreshScheduler {
                 productService::getAllProducts);
         long endTime = System.currentTimeMillis();
         log.info("Product cache refresh completed in {} ms", endTime - startTime);
-    }
-    @Scheduled(cron = "0 0 0 * * *")
-    public void refreshCustomizationTypeCache() {
-        String pantType = "Formal Pants";
-        refreshCache(CUSTOMIZATION_CACHE,
-                "getCustomizationType",
-                () -> customizationService.getCustomizationType(pantType));
     }
 
     @Scheduled(cron = "0 0 0 * * *")

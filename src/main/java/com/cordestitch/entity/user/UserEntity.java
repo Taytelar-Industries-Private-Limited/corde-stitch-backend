@@ -1,6 +1,5 @@
 package com.cordestitch.entity.user;
 
-import com.cordestitch.entity.customization.UserCustomizationEntity;
 import com.cordestitch.entity.loyalty.LoyaltyPointsEntity;
 import com.cordestitch.entity.order.OrderEntity;
 import com.cordestitch.entity.payment.CardEntity;
@@ -77,11 +76,6 @@ public class UserEntity {
     @ToString.Exclude
     @JsonIgnore
     private List<CardEntity> cardEntities;
-
-    @OneToMany(mappedBy = "userEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private List<UserCustomizationEntity> userCustomizationEntityList;
-
 
     @OneToOne(mappedBy = "userEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude

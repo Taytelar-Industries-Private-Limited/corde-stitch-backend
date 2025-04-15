@@ -1,7 +1,6 @@
 package com.cordestitch.request.order;
 
 import com.cordestitch.request.user.AddressRequest;
-import com.cordestitch.response.customization.CustomizationCartResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,11 +26,7 @@ public class OrderRequest {
 
     private List<OrderItemRequest> orderItemRequests;
 
-    private List<CustomizationCartResponse> customizationCartResponse;
-
     @NotNull(message = "Shipping address cannot be null")
     @Valid
     private AddressRequest shippingAddress;
-
-
 }

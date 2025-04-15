@@ -2,7 +2,6 @@ package com.cordestitch.exception;
 
 import com.cordestitch.exception.affiliate.FailedToSendOtpException;
 import com.cordestitch.exception.cart.CartItemNotFoundException;
-import com.cordestitch.exception.customization.*;
 import com.cordestitch.exception.filter.EncryptionException;
 import com.cordestitch.exception.order.*;
 import com.cordestitch.exception.otp.OtpNotFoundException;
@@ -281,56 +280,6 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
         assertEquals(expectedMessage, Objects.requireNonNull(responseEntity.getBody()).getMessage());
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), responseEntity.getBody().getStatusCode());
-    }
-
-    @Test
-    void testCustomizationTypeAlreadyExistException() {
-        String expectedMessage = "CustomizationType Already Exist";
-        CustomizationTypeAlreadyExistException exception = new CustomizationTypeAlreadyExistException(expectedMessage);
-        ResponseEntity<ErrorResponse> responseEntity = globalExceptionHandler.handleCustomizationTypeAlreadyExistException(exception);
-        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertEquals(expectedMessage, Objects.requireNonNull(responseEntity.getBody()).getMessage());
-        assertEquals(HttpStatus.BAD_REQUEST.value(), responseEntity.getBody().getStatusCode());
-    }
-
-    @Test
-    void testConvertToJsonException() {
-        String expectedMessage = "Convert To Json";
-        ConvertToJsonException exception = new ConvertToJsonException(expectedMessage);
-        ResponseEntity<ErrorResponse> responseEntity = globalExceptionHandler.handleConvertToJsonException(exception);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
-        assertEquals(expectedMessage, Objects.requireNonNull(responseEntity.getBody()).getMessage());
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), responseEntity.getBody().getStatusCode());
-    }
-
-    @Test
-    void testConvertFromJsonException() {
-        String expectedMessage = "Convert From Json";
-        ConvertFromJsonException exception = new ConvertFromJsonException(expectedMessage);
-        ResponseEntity<ErrorResponse> responseEntity = globalExceptionHandler.handleConvertFromJsonException(exception);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
-        assertEquals(expectedMessage, Objects.requireNonNull(responseEntity.getBody()).getMessage());
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), responseEntity.getBody().getStatusCode());
-    }
-
-    @Test
-    void testCustomizationNotFoundException() {
-        String expectedMessage = "Customization Not Found";
-        CustomizationNotFoundException exception = new CustomizationNotFoundException(expectedMessage);
-        ResponseEntity<ErrorResponse> responseEntity = globalExceptionHandler.handleCustomizationTypeNotFoundException(exception);
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        assertEquals(expectedMessage, Objects.requireNonNull(responseEntity.getBody()).getMessage());
-        assertEquals(HttpStatus.NOT_FOUND.value(), responseEntity.getBody().getStatusCode());
-    }
-
-    @Test
-    void testFabricNotFoundException() {
-        String expectedMessage = "Fabric Not Found";
-        FabricNotFoundException exception = new FabricNotFoundException(expectedMessage);
-        ResponseEntity<ErrorResponse> responseEntity = globalExceptionHandler.handleFabricNotFoundException(exception);
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        assertEquals(expectedMessage, Objects.requireNonNull(responseEntity.getBody()).getMessage());
-        assertEquals(HttpStatus.NOT_FOUND.value(), responseEntity.getBody().getStatusCode());
     }
 
     @Test
