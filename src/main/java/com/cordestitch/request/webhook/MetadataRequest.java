@@ -1,0 +1,14 @@
+package com.cordestitch.request.webhook;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+
+@Data
+public class MetadataRequest {
+
+    @JsonProperty("display_phone_number")
+    private String displayPhoneNumber;
+
+    @JsonProperty("phone_number_id")
+    private String phoneNumberId;
+}

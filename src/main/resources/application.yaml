@@ -1,0 +1,103 @@
+server:
+  port: 8081
+
+spring:
+  application:
+  name: cordestitch-Backend-Service
+  app:
+    env: ${ENVIRONMENT}
+  datasource:
+    url: jdbc:postgresql://postgres-service:5432/Tay-Telar
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    mongodb:
+      uri: mongodb://mongo-service:27017/cordestitch
+
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+    password: ${REDIS_PASSWORD}
+  cache:
+    type: redis
+
+  mail:
+    host: smtp.gmail.com
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          starttls:
+            required: true
+            enable: false
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+        debug: false
+    port: 465
+
+razorpay:
+  api:
+    key:
+      id: ${RAZORPAY_API_KEY_ID}
+      secret: ${RAZORPAY_API_KEY_SECRET}
+  x:
+    account.number: ${RAZORPAY_X_ACCOUNT_NUMBER}
+
+fast2sms:
+  api:
+    key: ${FAST2SMS_API_KEY}
+  sms:
+    url: https://www.fast2sms.com/dev/bulkV2?authorization=
+
+google:
+  maps:
+    api:
+      key: ${GOOGLE_MAP_KEY}
+    url: https://maps.googleapis.com/maps/api/directions/json?origin=
+
+aws:
+  access:
+    key:
+      id: ${AWS_ACCESS_KEY_ID}
+      secret: ${AWS_SECRET_ACCESS_KEY}
+  region: ${AWS_REGION}
+  buckets:
+    productImages: ${AWS_BUCKET_NAME}
+    productReview: ${AWS_REVIEW_BUCKET_NAME}
+
+cipher:
+  secret:
+    key: ${CIPHER_SECRET_KEY}
+
+application:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET_KEY}
+      expiration: ${JWT_EXPIRATION}
+      refresh-token-expiration: ${REFRESH_TOKEN_EXPIRATION}
+    token:
+      secret-key: ${TOKEN_SECRET_KEY}
+      expiration: ${TOKEN_EXPIRATION}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+
+logo:
+  image:
+    url: ${LOGO_URL}

@@ -1,0 +1,14 @@
+package com.cordestitch.enums;
+
+public enum ReturnStatus {
+    NOT_RETURNED,
+    EXCHANGE,
+    EXCHANGE_REQUESTED,
+    REFUND_REQUESTED,
+    REFUND_INITIATED,
+    REFUND_COMPLETED,
+    RETURN_REQUESTED,
+    RETURN_INITIATED,
+    RETURN_COMPLETED,
+    EXCHANGED_COMPLETED,
+}
