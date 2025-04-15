@@ -1,6 +1,5 @@
 package com.cordestitch.entity.user;
 
-import com.cordestitch.entity.alteration.SlotEntity;
 import com.cordestitch.entity.order.OrderEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -72,8 +71,4 @@ public class AddressEntity {
     @JsonIgnore
     private List<OrderEntity> orderEntities;
 
-    @OneToMany(mappedBy = "addressEntity", fetch = FetchType.LAZY)
-    @ToString.Exclude
-    @JsonIgnore
-    private List<SlotEntity> slotEntities;
 }

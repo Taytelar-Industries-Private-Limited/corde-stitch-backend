@@ -19,7 +19,6 @@ public class Constants {
 
     }
 
-    public static final String PIN_CODE_URL = "https://api.postalpincode.in/pincode/";
     public static final String USER_BANK_ID = "UB-ID";
     public static final String BANK_DETAILS_ADDED_SUCCESSFULLY = "Bank Details Added Successfully.";
     public static final String USER_BANK_DETAILS_NOT_FOUND = "No bank details found for user.";
@@ -45,24 +44,7 @@ public class Constants {
     public static final String CONTACT_ACTIVATED_SUCCESS = "Contact Activated Successfully.";
     public static final String MAX_BANK_ACCOUNTS_REACHED = "Maximum Bank Accounts Reached.";
     public static final String BANK_ACCOUNT_DETAILS_MISSING_MSG = "Bank account details are missing in the fund account response.";
-    public static final String PIN_CODE_ERR_MSG = "Your address is currently not in Bengaluru. Please add a Bengaluru address to book a slot.";
     public static final String LOYALTY_POINTS_REJECTED = "Loyalty Points Rejected.";
-    public static final String ALTERATION = "alt";
-    public static final String FIT_APPOINTMENT = "fit";
-    public static final String DELIVERY = "delivery";
-    public static final String STATUS = "Status";
-    public static final String POST_OFFICE = "PostOffice";
-    public static final String DISTRICT = "District";
-    public static final String STATE = "State";
-    public static final String PINCODE = "Pincode";
-    public static final String BANGALORE_RURAL = "Bangalore Rural";
-    public static final String BANGALORE_URBAN = "Bangalore Urban";
-    public static final String BANGALORE = "Bangalore";
-    public static final String OPERATIONAL_HOURS = "10:00AM to 05:00PM";
-    public static final String ALT_SUCCESS_MSG = "Alteration service will be available in your location.";
-    public static final String ALT_ERROR_MSG = "Currently alteration service will not be available in your location.";
-    public static final String FIT_SUCCESS_MSG = "Fit appointment service will be available in your location.";
-    public static final String FIT_ERROR_MSG = "Currently fit appointment service will not be available in your location.";
     public static final int RETURN_DAYS_POLICY = 7;
     public static final int RETURN_DAYS_POLICY_FOR_CUSTOMIZATION = 0;
     public static final String NORMAL_AUTHENTICATION = "Normal Registration";
@@ -140,12 +122,10 @@ public class Constants {
 
     public static final String ORDER_ITEM_NOT_FOUND = "Order Item Not Found";
     public static final String USER_DATA_MISSING_ERROR = "The Phone Number or Email Address is missing.";
-    public static final String MULTIPLE_ADDRESS_FOUND = "Multiple unique addresses found: ";
     public static final String SELECT_ERROR_MESSAGE = "Oops! Your selected orders come from different addresses. Please select orders from a single address to book your slot.";
     public static final String SLOT_BOOKED_SUCCESSFULLY = "Slot Booked Successfully.";
     public static final String SLOT_DATA_NOT_FOUND = "Slot data not found for the provided date %s, startTime %s, endTime %s";
     public static final String CANCELLED_SLOT_TIME_SUCCESSFULLY = "Cancelled slot time successfully.";
-    public static final String CURRENTLY_DOES_NOT_BOOKED_ANY_SLOTS = "Currently, there are no booked slots";
     public static final String SLOT_TIME_RESCHEDULED_SUCCESSFULLY = "Your slot has been successfully rescheduled.";
     public static final String SLOT_ALREADY_BOOKED = "Slots already booked for the provided date %s, startTime %s, endTime %s";
     public static final String OTP_ENTITY_DATA_NOT_FOUND = "User Data Not Found";
@@ -209,7 +189,6 @@ public class Constants {
     public static final String HIGHEST_RATED = "HighestRated";
     public static final String LOWEST_RATED = "LowestRated";
     public static final String REVIEW_CREATED_SUCCESSFULLY = "Review created successfully";
-    public static final String REVIEW_UPDATED_SUCCESSFULLY = "Review updated successfully";
     public static final String REVIEW_DELETED_SUCCESSFULLY = "Review deleted successfully";
     public static final String PAYMENT_ALREADY_CONFIRMED = "Payment already confirmed";
     public static final String PAYMENT_RETRY_INITIATED_SUCCESSFULLY = "Payment retry initiated successfully";

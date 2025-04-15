@@ -1,10 +1,6 @@
 package com.cordestitch.exception;
 
 import com.cordestitch.exception.affiliate.FailedToSendOtpException;
-import com.cordestitch.exception.alteration.DistanceCalculationException;
-import com.cordestitch.exception.alteration.MultipleAddressesFoundException;
-import com.cordestitch.exception.alteration.SlotAlreadyBookedException;
-import com.cordestitch.exception.alteration.SlotDataNotFoundException;
 import com.cordestitch.exception.cart.CartItemNotFoundException;
 import com.cordestitch.exception.customization.*;
 import com.cordestitch.exception.filter.EncryptionException;
@@ -288,46 +284,6 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void testDistanceCalculationException() {
-        String expectedMessage = "Failed to calculate distance";
-        DistanceCalculationException exception = new DistanceCalculationException(expectedMessage);
-        ResponseEntity<ErrorResponse> responseEntity = globalExceptionHandler.handleDistanceCalculationException(exception);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
-        assertEquals(expectedMessage, Objects.requireNonNull(responseEntity.getBody()).getMessage());
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), responseEntity.getBody().getStatusCode());
-    }
-
-    @Test
-    void testMultipleAddressesFoundException() {
-        String expectedMessage = "Multiple Addresses Found";
-        MultipleAddressesFoundException exception = new MultipleAddressesFoundException(expectedMessage);
-        ResponseEntity<ErrorResponse> responseEntity = globalExceptionHandler.handleMultipleAddressesFoundException(exception);
-        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntity.getStatusCode());
-        assertEquals(expectedMessage, Objects.requireNonNull(responseEntity.getBody()).getMessage());
-        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY.value(), responseEntity.getBody().getStatusCode());
-    }
-
-    @Test
-    void testSlotDataNotFoundException() {
-        String expectedMessage = "Slot Data Not Found";
-        SlotDataNotFoundException exception = new SlotDataNotFoundException(expectedMessage);
-        ResponseEntity<ErrorResponse> responseEntity = globalExceptionHandler.handleSlotDataNotFoundException(exception);
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        assertEquals(expectedMessage, Objects.requireNonNull(responseEntity.getBody()).getMessage());
-        assertEquals(HttpStatus.NOT_FOUND.value(), responseEntity.getBody().getStatusCode());
-    }
-
-    @Test
-    void testSlotAlreadyBookedException() {
-        String expectedMessage = "Slot Already Booked";
-        SlotAlreadyBookedException exception = new SlotAlreadyBookedException(expectedMessage);
-        ResponseEntity<ErrorResponse> responseEntity = globalExceptionHandler.handleSlotAlreadyBookedException(exception);
-        assertEquals(HttpStatus.CONFLICT, responseEntity.getStatusCode());
-        assertEquals(expectedMessage, Objects.requireNonNull(responseEntity.getBody()).getMessage());
-        assertEquals(HttpStatus.CONFLICT.value(), responseEntity.getBody().getStatusCode());
-    }
-
-    @Test
     void testCustomizationTypeAlreadyExistException() {
         String expectedMessage = "CustomizationType Already Exist";
         CustomizationTypeAlreadyExistException exception = new CustomizationTypeAlreadyExistException(expectedMessage);
@@ -462,4 +418,3 @@ class GlobalExceptionHandlerTest {
     }
 
 }
-

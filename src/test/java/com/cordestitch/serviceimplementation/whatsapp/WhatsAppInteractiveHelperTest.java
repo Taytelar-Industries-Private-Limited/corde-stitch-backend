@@ -1,22 +1,7 @@
 package com.cordestitch.serviceimplementation.whatsapp;
 
-import com.cordestitch.entity.loyalty.LoyaltyPointsEntity;
-import com.cordestitch.entity.payment.CardEntity;
-import com.cordestitch.entity.user.AddressEntity;
-import com.cordestitch.entity.user.UserEntity;
-import com.cordestitch.enums.DeliveryStatus;
-import com.cordestitch.enums.OrderStatus;
-import com.cordestitch.enums.ReturnStatus;
 import com.cordestitch.repository.user.UserRepository;
-import com.cordestitch.request.alteration.GetSlotTimesRequest;
 import com.cordestitch.request.whatsapp.*;
-import com.cordestitch.response.alteration.BookedSlotResponse;
-import com.cordestitch.response.alteration.BookedSlotTimes;
-import com.cordestitch.response.alteration.SlotAvailability;
-import com.cordestitch.response.alteration.SlotTimes;
-import com.cordestitch.response.order.OrderItemResponse;
-import com.cordestitch.response.user.AddressResponse;
-import com.cordestitch.service.serviceimplementation.alteration.AlterationServiceHelper;
 import com.cordestitch.service.serviceimplementation.whatsapp.WhatsAppInteractiveHelper;
 import com.cordestitch.util.WhatsAppConstants;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,17 +11,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 class WhatsAppInteractiveHelperTest {
 
@@ -44,9 +23,6 @@ class WhatsAppInteractiveHelperTest {
     @InjectMocks
     @Spy
     private WhatsAppInteractiveHelper whatsAppInteractiveHelper;
-
-    @Mock
-    private AlterationServiceHelper alterationServiceHelper;
 
     @Mock
     private UserRepository userRepository;
@@ -116,143 +92,6 @@ class WhatsAppInteractiveHelperTest {
         List<SectionRequest> interactiveButtonRequestList = whatsAppInteractiveHelper.createTopCategorySections();
         assertEquals(expectedInteractiveButtonRequestList, interactiveButtonRequestList);
     }
-
-    @Test
-    void testFetchAvailableSlotTimes() {
-        String payload = "some_payload_data";
-        LocalDate expectedDate = LocalDate.of(2024, 2, 20);
-        GetSlotTimesRequest mockRequest = new GetSlotTimesRequest();
-        mockRequest.setSlotDate(expectedDate);
-        when(alterationServiceHelper.mapToGetSlotTimes(any(GetSlotTimesRequest.class))).thenReturn(getSlotAvailability());
-        List<String> result = whatsAppInteractiveHelper.fetchAvailableSlotTimes(payload);
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertTrue(result.contains("10:00 AM"));
-    }
-
-    @Test
-    void testFetchAvailableSlotDates_WithOrderItemId() {
-        String recipientNumber = "919876543210";
-        String payLoadData = "some_payload_IT76655_t_2024-07-09_T_11:00-12:00";
-        String expectedPhone = "9876543210";
-        UserEntity userEntity = getUserEntity();
-        when(userRepository.findUserByPhoneNumber(expectedPhone)).thenReturn(userEntity);
-        when(alterationServiceHelper.mapToBookedSlotTimes(userEntity.getUserId())).thenReturn(getBookedSlotResponse());
-        List<LocalDate> result = whatsAppInteractiveHelper.fetchAvailableSlotDates(recipientNumber, payLoadData);
-        assertNotNull(result);
-    }
-
-    @Test
-    void testFetchAvailableSlotDates_WithOrderItemId_isNull() {
-        String recipientNumber = "919876543210";
-        String payLoadData = "some_payload_t _2024-07-09_T_11:00-12:00";
-        String expectedPhone = "9876543210";
-        UserEntity userEntity = getUserEntity();
-        when(userRepository.findUserByPhoneNumber(expectedPhone)).thenReturn(userEntity);
-        List<LocalDate> result = whatsAppInteractiveHelper.fetchAvailableSlotDates(recipientNumber, payLoadData);
-        assertNotNull(result);
-    }
-
-    @Test
-    void testFetchAvailableSlotDates_WithOrderItemId_isNotNull_withCurrentDate_withoutPhoneCode() {
-        String recipientNumber = "96543210";
-        String payLoadData = "some_payload_t _2025-02-21_T_11:00-12:00";
-        String expectedPhone = "9876543210";
-        UserEntity userEntity = getUserEntity();
-        when(userRepository.findUserByPhoneNumber(expectedPhone)).thenReturn(userEntity);
-        List<LocalDate> result = whatsAppInteractiveHelper.fetchAvailableSlotDates(recipientNumber, payLoadData);
-        assertNotNull(result);
-    }
-
-    private BookedSlotResponse getBookedSlotResponse() {
-        List<BookedSlotTimes> bookedSlotTimesList = Arrays.asList(
-                new BookedSlotTimes(
-                        "SLOT123",
-                        LocalDate.of(2024, 2, 20),
-                        LocalTime.of(10, 0),
-                        LocalTime.of(11, 0),
-                        new AddressResponse(),
-                        getOrderItemResponses(),
-                        true
-                ),
-                new BookedSlotTimes(
-                        "SLOT456",
-                        LocalDate.of(2024, 2, 21),
-                        LocalTime.of(14, 0),
-                        LocalTime.of(15, 0),
-                        new AddressResponse(),
-                        getOrderItemResponses(),
-                        false
-                )
-        );
-
-        BookedSlotResponse bookedSlotResponse = new BookedSlotResponse();
-        bookedSlotResponse.setBookedSlotTimes(bookedSlotTimesList);
-        return bookedSlotResponse;
-    }
-
-    private List<OrderItemResponse> getOrderItemResponses() {
-        List<OrderItemResponse> orderItemResponseList = new ArrayList<>();
-        OrderItemResponse orderItemResponse = new OrderItemResponse();
-        orderItemResponse.setOrderItemId("IT76655");
-        orderItemResponse.setProductId("P001");
-        orderItemResponse.setProductName("T-Shirt");
-        orderItemResponse.setProductDescription("High-quality cotton T-shirt");
-        orderItemResponse.setProductImage("https://example.com/tshirt.jpg");
-        orderItemResponse.setQuantity(2);
-        orderItemResponse.setUnitPrice(499.99);
-        orderItemResponse.setProductColor("Red");
-        orderItemResponse.setProductSize("L");
-        orderItemResponse.setTotalAmount(999.98);
-        orderItemResponse.setProductOfferPercentage(10.0);
-        orderItemResponse.setReturnDaysPolicy(30);
-        orderItemResponse.setDeliveryStatus(DeliveryStatus.SHIPPED);
-        orderItemResponse.setDeliveryDate(LocalDateTime.now().plusDays(3));
-        orderItemResponse.setCancelOrderDate(LocalDateTime.now().plusDays(6));
-        orderItemResponse.setOrderStatus(OrderStatus.CONFIRMED);
-        orderItemResponse.setReturnStatus(ReturnStatus.NOT_RETURNED);
-        orderItemResponse.setPinCodeInBengaluru(true);
-        orderItemResponseList.add(orderItemResponse);
-        return orderItemResponseList;
-    }
-
-    private UserEntity getUserEntity() {
-        UserEntity userEntity = new UserEntity();
-        userEntity.setUserId("123");
-        userEntity.setGender("male");
-        userEntity.setReferred(true);
-        userEntity.setSlotEntities(new ArrayList<>());
-        userEntity.setOrderEntities(new ArrayList<>());
-        userEntity.setUserCreatedAt(LocalDateTime.now());
-        userEntity.setReferredReferralCode("123456");
-        userEntity.setReferralCode("123456");
-        userEntity.setUserType("customer");
-        userEntity.setAuthenticationSource("google");
-        userEntity.setEmailAddressVerified(true);
-        userEntity.setFirstName("jay");
-        userEntity.setEmailAddress("jay@gmail.com");
-        userEntity.setLastName("doe");
-        userEntity.setPhoneNumber("1234567890");
-        userEntity.setPhoneNumberVerified(true);
-        userEntity.setAddressEntityList(List.of(new AddressEntity()));
-        userEntity.setCardEntities(List.of(new CardEntity()));
-        userEntity.setUserCustomizationEntityList(new ArrayList<>());
-        userEntity.setLoyaltyPointsEntity(new LoyaltyPointsEntity());
-        return userEntity;
-    }
-
-
-    private SlotTimes getSlotAvailability() {
-        SlotTimes slotTimes = new SlotTimes();
-        slotTimes.setTodayDate(LocalDate.of(2024, 2, 20));
-        List<SlotAvailability> slotAvailabilities = new ArrayList<>();
-        slotAvailabilities.add(new SlotAvailability("10:00 AM", true));
-        slotAvailabilities.add(new SlotAvailability("11:00 AM", false));
-        slotAvailabilities.add(new SlotAvailability("12:00 PM", true));
-        slotTimes.setAvailableSlots(slotAvailabilities);
-        return slotTimes;
-    }
-
 
     private List<InteractiveButtonRequest> getExpectedCancellationButtons() {
         List<InteractiveButtonRequest> interactiveButtonRequestList = new ArrayList<>();

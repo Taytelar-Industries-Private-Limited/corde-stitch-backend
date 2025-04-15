@@ -1,7 +1,6 @@
 package com.cordestitch.exception;
 
 import com.cordestitch.exception.affiliate.FailedToSendOtpException;
-import com.cordestitch.exception.alteration.*;
 import com.cordestitch.exception.cart.CartItemNotFoundException;
 import com.cordestitch.exception.cart.SessionExpiredException;
 import com.cordestitch.exception.customization.*;
@@ -153,20 +152,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value()));
     }
 
-    @ExceptionHandler(DistanceCalculationException.class)
-    public ResponseEntity<ErrorResponse> handleDistanceCalculationException(DistanceCalculationException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()));
-    }
 
-    @ExceptionHandler(MultipleAddressesFoundException.class)
-    public ResponseEntity<ErrorResponse> handleMultipleAddressesFoundException(MultipleAddressesFoundException ex) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ErrorResponse(ex.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY.value()));
-    }
 
-    @ExceptionHandler(SlotDataNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleSlotDataNotFoundException(SlotDataNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value()));
-    }
 
     @ExceptionHandler(OrderCancellationException.class)
     public ResponseEntity<ErrorResponse> handleOrderCancellationException(OrderCancellationException ex) {
@@ -192,10 +179,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN.value()));
     }
 
-    @ExceptionHandler(SlotAlreadyBookedException.class)
-    public ResponseEntity<ErrorResponse> handleSlotAlreadyBookedException(SlotAlreadyBookedException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(ex.getMessage(), HttpStatus.CONFLICT.value()));
-    }
+
 
     @ExceptionHandler(DataCheckReflectionException.class)
     public ResponseEntity<ErrorResponse> handleDataCheckReflectionException(DataCheckReflectionException ex) {
@@ -294,11 +278,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ServiceRequestException.class)
     public ResponseEntity<ErrorResponse> handleServiceRequestException(ServiceRequestException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()));
-    }
-
-    @ExceptionHandler(DateConversionException.class)
-    public ResponseEntity<ErrorResponse> handleDateConversionException(DateConversionException ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()));
     }
 

@@ -17,9 +17,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -171,97 +169,6 @@ class WhatsAppServiceImplementationTest {
         when(whatsAppTemplateHelper.createMessageRequest(anyString(), anyString(), anyString(), any())).thenReturn(getWhatsAppMessageRequest());
         SuccessResponse response = whatsAppServiceImplementation.sendOrderStatusMessage("989876578", "Vinay", "Od565", "21-09-2024", DeliveryStatus.OUT_FOR_DELIVERY);
         assertEquals(WhatsAppConstants.MESSAGE_SENT, response.getMessage());
-    }
-
-    @Test
-    void sendAlterationAppointmentMessage() {
-        when(whatsAppTemplateHelper.createMessageRequest(any(), any(), any(), any())).thenReturn(getWhatsAppMessageRequest());
-        SuccessResponse response = whatsAppServiceImplementation.sendAlterationAppointmentMessage("95876545499", "Vinay", "OD78197297", "21-08-2024", "10:00AM-11:00AM");
-        assertEquals(WhatsAppConstants.MESSAGE_SENT, response.getMessage());
-    }
-
-    @Test
-    void cancelAppointmentActionRequest() {
-        when(whatsAppInteractiveHelper.getInteractiveMessageRequest(anyString(), anyString(), anyString(), anyString(), anyString(), any(), any())).thenReturn(getWhatsAppMessageRequest());
-        SuccessResponse response = whatsAppServiceImplementation.cancelAppointmentActionRequest("95876545499", "OD78197297");
-        assertEquals(WhatsAppConstants.MESSAGE_SENT, response.getMessage());
-    }
-
-    @Test
-    void sendAppointmentCancellationMessage() {
-        when(whatsAppTemplateHelper.createMessageRequest(any(), any(), any(), any())).thenReturn(getWhatsAppMessageRequest());
-        SuccessResponse response = whatsAppServiceImplementation.sendAppointmentCancellationMessage("95876545499", "Dilip", "21-02-2025", "10:00AM-11:00AM");
-        assertEquals(WhatsAppConstants.MESSAGE_SENT, response.getMessage());
-    }
-
-    @Test
-    void sendAlterationReschedulingSlotDate() {
-        when(whatsAppInteractiveHelper.getInteractiveMessageRequest(anyString(), anyString(), anyString(), anyString(), anyString(), any(), any())).thenReturn(getWhatsAppMessageRequest());
-        SuccessResponse response = whatsAppServiceImplementation.sendAlterationReschedulingSlotDate("95876545499", "OD78197297");
-        assertEquals(WhatsAppConstants.MESSAGE_SENT, response.getMessage());
-    }
-
-    @Test
-    void sendAlterationReschedulingSlotTimes() {
-        when(whatsAppInteractiveHelper.getInteractiveMessageRequest(anyString(), anyString(), anyString(), anyString(), anyString(), any(), any())).thenReturn(getWhatsAppMessageRequest());
-        SuccessResponse response = whatsAppServiceImplementation.sendAlterationReschedulingSlotTimes("95876545499", "OD78197297");
-        assertEquals(WhatsAppConstants.MESSAGE_SENT, response.getMessage());
-    }
-
-    @Test
-    void sendAppointmentRescheduleMessage() {
-        when(whatsAppTemplateHelper.createMessageRequest(any(), any(), any(), any())).thenReturn(getWhatsAppMessageRequest());
-        SuccessResponse response = whatsAppServiceImplementation.sendAppointmentRescheduleMessage("95876545499", "Dilip", "OD343434", "21-02-2025", "10:00AM-11:00AM", "23-02-2025", "11:00AM-11:30AM");
-        assertEquals(WhatsAppConstants.MESSAGE_SENT, response.getMessage());
-    }
-
-    @Test
-    void sendFitAppointmentMessage() {
-        when(whatsAppTemplateHelper.createMessageRequest(any(), any(), any(), any())).thenReturn(getWhatsAppMessageRequest());
-        SuccessResponse response = whatsAppServiceImplementation.sendFitAppointmentMessage("95876545499", "Dilip", "21-02-2025", "10:00AM-11:00AM");
-        assertEquals(WhatsAppConstants.MESSAGE_SENT, response.getMessage());
-    }
-
-    @Test
-    void getAvailableDateSlotSections_When_No_Available_Dates_Should_Return_Empty_List() {
-        String recipientNumber = "1234567890";
-        String payLoadData = "some_payload";
-        when(whatsAppInteractiveHelper.fetchAvailableSlotDates(recipientNumber, payLoadData)).thenReturn(Collections.emptyList());
-        List<SectionRequest> result = whatsAppServiceImplementation.getAvailableDateSlotSections(recipientNumber, payLoadData);
-        assertFalse(result.isEmpty(), "Expected an empty list when no available dates exist.");
-    }
-
-    @Test
-    void getAvailableTimeSlotSections_When_No_Available_times_Should_Return_Empty_List() {
-        String recipientNumber = "1234567890";
-        String payLoadData = "some_payload";
-        when(whatsAppInteractiveHelper.fetchAvailableSlotTimes(payLoadData)).thenReturn(Collections.emptyList());
-        List<SectionRequest> result = whatsAppServiceImplementation.getAvailableTimeSlotSections(recipientNumber, payLoadData);
-        assertFalse(result.isEmpty(), "Expected an empty list when no available dates exist.");
-    }
-
-    @Test
-    void getAvailableDateSlotSections_When_Slots_Are_Available_Should_Return_SectionRequest() {
-        String recipientNumber = "1234567890";
-        String payLoadData = "some_payload";
-        List<LocalDate> availableDates = List.of(LocalDate.of(2025, 2, 20), LocalDate.of(2025, 2, 21));
-        when(whatsAppInteractiveHelper.fetchAvailableSlotDates(recipientNumber, payLoadData)).thenReturn(availableDates);
-        when(whatsAppInteractiveHelper.createRow(anyString(), anyString())).thenReturn(new RowRequest());
-        when(whatsAppInteractiveHelper.createSection(anyString(), anyList())).thenReturn(new SectionRequest());
-        List<SectionRequest> result = whatsAppServiceImplementation.getAvailableDateSlotSections(recipientNumber, payLoadData);
-        assertEquals(1, result.size(), "Expected one section request to be created.");
-    }
-
-    @Test
-    void getAvailableTimeSlotSections_When_Slots_Are_Available_Should_Return_SectionRequest() {
-        String recipientNumber = "1234567890";
-        String payLoadData = "some_payload";
-        List<String> availableSlotTimes = List.of("10:00AM-11:00AM", "11:00AM-12:00PM");
-        when(whatsAppInteractiveHelper.fetchAvailableSlotTimes(payLoadData)).thenReturn(availableSlotTimes);
-        when(whatsAppInteractiveHelper.createRow(anyString(), anyString())).thenReturn(new RowRequest());
-        when(whatsAppInteractiveHelper.createSection(anyString(), anyList())).thenReturn(new SectionRequest());
-        List<SectionRequest> result = whatsAppServiceImplementation.getAvailableTimeSlotSections(payLoadData, recipientNumber);
-        assertEquals(1, result.size(), "Expected one section request to be created.");
     }
 
     @Test

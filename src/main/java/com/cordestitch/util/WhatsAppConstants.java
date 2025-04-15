@@ -26,10 +26,6 @@ public class WhatsAppConstants {
     public static final String REPLY = "reply";
     public static final String LIST = "list";
     public static final String ORDER_CONFIRM_TEMPLATE = "cordestitch_order_confirmation";
-    public static final String ALTERATION_APPOINTMENT_TEMPLATE = "cordestitch_alteration_appointment";
-    public static final String ALTERATION_RESCHEDULE_TEMPLATE = "cordestitch_appointment_reschedule";
-    public static final String APPOINTMENT_CANCELLATION_TEMPLATE = "cordestitch_appointment_cancellation";
-    public static final String FIT_APPOINTMENT_TEMPLATE = "cordestitch_fit_appointment ";
     public static final String ORDER_STATUS_SHIPPED_TEMPLATE = "cordestitch_order_status_shipped";
     public static final String SOMETHING_WENT_WRONG_TEMPLATE = "cordestitch_something_went_wrong";
     public static final String ORDER_STATUS_DELIVERED_SUCCESS_TEMPLATE = "cordestitch_order_status_delivered_success";
@@ -42,16 +38,9 @@ public class WhatsAppConstants {
     public static final String EN_US = "en_US";
     public static final String MESSAGE = "/messages";
     public static final String CANCEL_ORDER_INTERACTIVE_HEADER_TEXT = "Help Us Understand Your Cancellation";
-    public static final String RESCHEDULE_APPOINTMENT_DATE_INTERACTIVE_HEADER_TEXT = "Pick a Different Date for Your Appointment";
-    public static final String RESCHEDULE_APPOINTMENT_TIME_INTERACTIVE_HEADER_TEXT = "Great! Pick a time slot for your appointment";
     public static final String CANCEL_ORDER_INTERACTIVE_BODY_TEXT = "We’re sorry to hear that you want to cancel your order. Please let us know the reason for the cancellation.";
-    public static final String RESCHEDULE_APPOINTMENT_DATE_INTERACTIVE_BODY_TEXT = "Can't make it? No worries! Choose another available date for appointment 👇";
-    public static final String RESCHEDULE_APPOINTMENT_TIME_INTERACTIVE_BODY_TEXT = "Please select a new available time slot to reschedule appointment 👇";
     public static final String CANCEL_ORDER_ACTION_BODY_TEXT = "Are you sure you want to cancel the order?";
-    public static final String CANCEL_APPOINTMENT_ACTION_BODY_TEXT = "Are you sure you want to cancel the appointment?";
     public static final String CANCEL_ORDER_INTERACTIVE_BUTTON_TEXT = "Cancel My Order";
-    public static final String RESCHEDULE_APPOINTMENT_DATE_INTERACTIVE_BUTTON_TEXT = "Reschedule now";
-    public static final String RESCHEDULE_APPOINTMENT_TIME_INTERACTIVE_BUTTON_TEXT = "View available slots";
     public static final String LANGUAGE_POLICY = "deterministic";
     public static final String IMAGE_URL = "https://product-images-2024.s3.ap-south-1.amazonaws.com/HomePage/images/cordestitch.jpeg";
     public static final String TEMPLATE = "template";
@@ -93,10 +82,6 @@ public class WhatsAppConstants {
     public static final String FORMAL_PANT_MESSAGE_BODY = "*Step into Style with Our Formals!* \nDiscover premium comfort and elegance designed to make you stand out at every meeting. \n*Explore now!*👇 \nhttps://dev.cordestitch.com";
     public static final String CASUAL_PANT_MESSAGE_BODY = "*Stay Cool, Stay Casual!* \nFind the perfect pair of casual pants for your everyday vibe—comfortable, stylish, and effortlessly you. \n*Check them out now!.*👇 \nhttps://dev.cordestitch.com";
     public static final String CARGO_PANT_MESSAGE_BODY = "*Built for Comfort, Ready for Action!* \nRugged style with everyday comfort.\nExtra pockets, extra cool—grab yours now!.👇 \nhttps://dev.cordestitch.com";
-    public static final String RESCHEDULE_ALTERATION_APPOINTMENT_TEXT = " for order ";
-    public static final String RESCHEDULE_FIT_APPOINTMENT_TEXT = " for fit appointment ";
-    public static final String TIME_SLOT_TIME_NOT_AVAILABLE = "Oops! There are no open slots for the date you picked. \nTry selecting a different date, and we’ll do our best to accommodate you! \nThanks, *cordestitch!*";
-    public static final String TIME_SLOT_DATE_NOT_AVAILABLE = "Unfortunately,rescheduling is not available as the return policy period has ended. \nIf you have any questions or need further assistance, feel free to visit our website! \n Thanks, *cordestitch*!";
     public static final Map<String, String> CATEGORY_TYPES = Map.of(
             FORMAL_PANTS, FORMAL_PANT_MESSAGE_BODY,
             CASUAL_PANTS, CASUAL_PANT_MESSAGE_BODY,

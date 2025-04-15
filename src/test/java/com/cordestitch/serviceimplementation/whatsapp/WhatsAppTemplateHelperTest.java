@@ -139,34 +139,6 @@ class WhatsAppTemplateHelperTest {
         assertTrue(footerComponent.getParameters().isEmpty());
     }
 
-    @Test
-    void createAlterationAppointmentTemplate() {
-        List<TemplateComponent> expectedTemplateComponentList = getCreateAlterationAppointmentTemplate();
-        List<TemplateComponent> alterationAppointment = whatsAppTemplateHelper.createAlterationAppointmentTemplate("Vinay", "Od123", "21-01-2024", "10:00AM-11:00AM");
-        assertEquals(expectedTemplateComponentList.getFirst().getParameters().getFirst().getImageParameter(), alterationAppointment.getFirst().getParameters().getFirst().getImageParameter());
-    }
-
-    @Test
-    void createAppointmentCancellationTemplate() {
-        List<TemplateComponent> expectedTemplateComponentList = getCreateAlterationAppointmentTemplate();
-        List<TemplateComponent> alterationCancellation = whatsAppTemplateHelper.createAppointmentCancellationTemplate("Vinay", "21-01-2024", "10:00AM-11:00AM");
-        assertEquals(expectedTemplateComponentList.getFirst().getParameters().getFirst().getImageParameter(), alterationCancellation.getFirst().getParameters().getFirst().getImageParameter());
-    }
-
-    @Test
-    void createAppointmentRescheduleTemplate() {
-        List<TemplateComponent> expectedTemplateComponentList = getCreateAlterationAppointmentTemplate();
-        List<TemplateComponent> alterationReschedule = whatsAppTemplateHelper.createAppointmentRescheduleTemplate("Vinay", "21-01-2024", "21-01-2000", "10:00AM-11:00AM", "22-01-2000", "10:00AM-11:00AM");
-        assertEquals(expectedTemplateComponentList.getFirst().getParameters().getFirst().getImageParameter(), alterationReschedule.getFirst().getParameters().getFirst().getImageParameter());
-    }
-
-    @Test
-    void createFitAppointmentTemplate() {
-        List<TemplateComponent> expectedTemplateComponentList = getCreateAlterationAppointmentTemplate();
-        List<TemplateComponent> fitAppointmentTemplate = whatsAppTemplateHelper.createFitAppointmentTemplate("Vinay", "21-01-2024", "21-01-2000");
-        assertEquals(expectedTemplateComponentList.getFirst().getParameters().getFirst().getImageParameter(), fitAppointmentTemplate.getFirst().getParameters().getFirst().getImageParameter());
-    }
-
     private List<TemplateComponent> getOrderStatusTemplateWithoutDate() {
         List<TemplateComponent> templateComponentList = new ArrayList<>();
         templateComponentList.add(getBodyTemplateComponent(getTextParameterWithoutDate()));
@@ -334,14 +306,6 @@ class WhatsAppTemplateHelperTest {
         templateComponentList.add(getBodyTemplateComponent(getTextAndDateTimeParameter()));
         templateComponentList.add(getButtonComponent(0, WhatsAppConstants.TRACK_ORDER + "Od123"));
         templateComponentList.add(getButtonComponent(1, WhatsAppConstants.CANCEL_ORDER + "Od123"));
-        return templateComponentList;
-    }
-
-    private List<TemplateComponent> getCreateAlterationAppointmentTemplate() {
-        List<TemplateComponent> templateComponentList = new ArrayList<>();
-        templateComponentList.add(getBodyTemplateComponent(Collections.singletonList(getTextParameter("Vinay"))));
-        templateComponentList.add(getButtonComponent(0, WhatsAppConstants.RESCHEDULE_APPOINTMENT));
-        templateComponentList.add(getButtonComponent(1, WhatsAppConstants.CANCEL_APPOINTMENT));
         return templateComponentList;
     }
 

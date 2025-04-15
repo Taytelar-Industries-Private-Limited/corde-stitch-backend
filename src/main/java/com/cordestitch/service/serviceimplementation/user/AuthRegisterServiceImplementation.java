@@ -1,8 +1,5 @@
 package com.cordestitch.service.serviceimplementation.user;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cordestitch.entity.admin.AdminEntity;
 import com.cordestitch.entity.affiliate.AffiliateUserEntity;
 import com.cordestitch.entity.otp.OTPEntity;
@@ -11,7 +8,6 @@ import com.cordestitch.entity.user.UserEntity;
 import com.cordestitch.exception.affiliate.FailedToSendOtpException;
 import com.cordestitch.exception.otp.OtpNotFoundException;
 import com.cordestitch.exception.user.DataCheckReflectionException;
-import com.cordestitch.exception.user.ServiceRequestException;
 import com.cordestitch.exception.user.UserDetailsMissMatchException;
 import com.cordestitch.exception.user.UserNotFoundException;
 import com.cordestitch.repository.admin.AdminRepository;
@@ -23,8 +19,6 @@ import com.cordestitch.request.user.*;
 import com.cordestitch.response.SuccessResponse;
 import com.cordestitch.response.otp.UpdateDataResponse;
 import com.cordestitch.response.user.AddressResponse;
-import com.cordestitch.response.user.ServiceDetailsResponse;
-import com.cordestitch.response.user.ServiceResponse;
 import com.cordestitch.response.user.UserDetailsResponse;
 import com.cordestitch.service.service.user.AuthRegisterService;
 import com.cordestitch.service.serviceimplementation.otp.OTPServiceImplementation;
@@ -36,7 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -46,14 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpTimeoutException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -81,7 +68,6 @@ public class AuthRegisterServiceImplementation implements AuthRegisterService {
     private static final ModelMapper modelMapper = new ModelMapper();
 
     private final UserServiceImplementation serviceImplementation;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${spring.mail.username}")
     private String fromEmailAddress;
@@ -151,7 +137,7 @@ public class AuthRegisterServiceImplementation implements AuthRegisterService {
     public UserDetailsResponse getUserDetails(String userId) {
         log.info("Getting user details for the userId : {}", userId);
         UserEntity userEntity = userRepository.findUserByUserId(userId);
-        if(isNull(userEntity)) {
+        if (isNull(userEntity)) {
             log.info(Constants.USER_NOT_FOUND);
             throw new UserNotFoundException(Constants.USER_NOT_FOUND);
         }
@@ -169,7 +155,8 @@ public class AuthRegisterServiceImplementation implements AuthRegisterService {
 
         List<AddressEntity> addressEntities = addressRepository.findByUserEntityUserIdAndIsDeletedFalse(userId);
         log.info("List of Address : {}", addressEntities);
-        List<AddressResponse> addressResponses = modelMapper.map(addressEntities, new TypeToken<List<AddressResponse>>() {}.getType());
+        List<AddressResponse> addressResponses = modelMapper.map(addressEntities, new TypeToken<List<AddressResponse>>() {
+        }.getType());
         userDetailsResponse.setAddressResponses(addressResponses);
         log.info("UserDetails Response : {}", userDetailsResponse);
         return userDetailsResponse;
@@ -181,7 +168,7 @@ public class AuthRegisterServiceImplementation implements AuthRegisterService {
         log.info("Update User Details Request : {}", request);
 
         UserEntity userEntity = userRepository.findUserByUserId(request.getUserId());
-        if(isNull(userEntity)) {
+        if (isNull(userEntity)) {
             log.info(Constants.USER_NOT_FOUND);
             throw new UserNotFoundException(Constants.USER_NOT_FOUND);
         }
@@ -204,51 +191,6 @@ public class AuthRegisterServiceImplementation implements AuthRegisterService {
         }
 
         return new SuccessResponse(Constants.USER_DETAILS_UPDATED_SUCCESSFULLY, HttpStatus.OK.value());
-    }
-
-    @Override
-    public ServiceResponse checkServiceAvailability(ServiceRequest request) {
-        log.info("Check Service Availability Service Request: {}", request);
-        try {
-            String url = Constants.PIN_CODE_URL + request.getPinCode();
-            log.info("Check Service Availability URL: {}", url);
-
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Content-Type", "application/json")
-                    .method(HttpMethod.GET.toString(), HttpRequest.BodyPublishers.noBody())
-                    .build();
-
-            HttpClient client = HttpClient.newHttpClient();
-            HttpResponse<String> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 201 && response.statusCode() != 200) {
-                log.error("Status Code: {}, Response Body: {}", response.statusCode(), response.body());
-                return new ServiceResponse();
-            }
-
-            log.info("Service Availability Response: {}", response.body());
-            ServiceResponse serviceResponse = checkServiceRequestAvailability(request, response.body());
-
-            log.info("Check Service Availability Response: {}", serviceResponse);
-            return serviceResponse;
-
-        } catch (HttpTimeoutException e) {
-            log.error("Http Timeout Exception while checking service availability: {}", e.getMessage());
-            throw new ServiceRequestException(e.getMessage());
-
-        } catch (InterruptedException e) {
-            log.error("Interrupted Exception while checking service availability: {}", e.getMessage());
-            Thread.currentThread().interrupt();
-            throw new ServiceRequestException(e.getMessage());
-
-        } catch (IOException e) {
-            log.error("IO Exception while checking service availability: {}", e.getMessage());
-            throw new ServiceRequestException(e.getMessage());
-
-        } catch (Exception e) {
-            log.error("Error while checking service availability: {}", e.getMessage());
-            throw new ServiceRequestException(e.getMessage());
-        }
     }
 
     private void saveEmailToOTPEntity(String emailAddress, String phoneNumber) {
@@ -710,76 +652,5 @@ public class AuthRegisterServiceImplementation implements AuthRegisterService {
         }
 
         return response;
-    }
-
-    private ServiceResponse checkServiceRequestAvailability(ServiceRequest request, String body) throws JsonProcessingException {
-        ServiceResponse serviceResponse = new ServiceResponse();
-        if(request.getServiceRequestType().equals(Constants.ALTERATION) || request.getServiceRequestType().equals(Constants.FIT_APPOINTMENT)) {
-            serviceResponse = checkServiceAvailability(request, body);
-        } else if(request.getServiceRequestType().equals(Constants.DELIVERY)) {
-            serviceResponse = new ServiceResponse();
-        }
-        return serviceResponse;
-    }
-
-    private ServiceResponse checkServiceAvailability(ServiceRequest request, String body) throws JsonProcessingException {
-        List<Map<String, Object>> mapList = objectMapper.readValue(body, new TypeReference<>() {});
-
-        for (Map<String, Object> map : mapList) {
-            if (isStatusSuccess(map)) {
-                List<Map<String, Object>> postOffices = getPostOffices(map);
-                if (postOffices != null) {
-                    ServiceResponse response = processPostOffices(request, postOffices);
-                    if (response != null) {
-                        return response;
-                    }
-                }
-            }
-        }
-        String message = request.getServiceRequestType().equals(Constants.ALTERATION) ? Constants.ALT_ERROR_MSG : Constants.FIT_ERROR_MSG;
-        return createServiceResponse(request, null, null, false, message);
-    }
-
-    private boolean isStatusSuccess(Map<String, Object> map) {
-        String status = (String) map.get(Constants.STATUS);
-        return Constants.SUCCESS.equals(status);
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<Map<String, Object>> getPostOffices(Map<String, Object> map) {
-        return (List<Map<String, Object>>) map.get(Constants.POST_OFFICE);
-    }
-
-    private ServiceResponse processPostOffices(ServiceRequest request, List<Map<String, Object>> postOffices) {
-        for (Map<String, Object> postOffice : postOffices) {
-            String district = (String) postOffice.get(Constants.DISTRICT);
-            String state = (String) postOffice.get(Constants.STATE);
-            String pin = (String) postOffice.get(Constants.PINCODE);
-
-            if (isMatchingDistrict(district) && request.getPinCode().equals(pin)) {
-                String message = request.getServiceRequestType().equals(Constants.ALTERATION) ? Constants.ALT_SUCCESS_MSG : Constants.FIT_SUCCESS_MSG;
-                return createServiceResponse(request, district, state, true, message);
-            }
-        }
-        return null;
-    }
-
-
-    private boolean isMatchingDistrict(String district) {
-        return Constants.BANGALORE_RURAL.equals(district)
-                || Constants.BANGALORE_URBAN.equals(district)
-                || Constants.BANGALORE.equals(district);
-    }
-
-    private ServiceResponse createServiceResponse(ServiceRequest request, String district, String state, boolean isAvailable, String message) {
-        ServiceResponse serviceResponse = new ServiceResponse();
-        serviceResponse.setPinCode(request.getPinCode());
-        serviceResponse.setCityName(district);
-        serviceResponse.setStateName(state);
-        serviceResponse.setServiceDetailsResponse(new ServiceDetailsResponse(
-                request.getServiceRequestType(), isAvailable,
-                Constants.OPERATIONAL_HOURS, message
-        ));
-        return serviceResponse;
     }
 }

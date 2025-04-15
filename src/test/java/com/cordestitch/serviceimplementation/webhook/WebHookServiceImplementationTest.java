@@ -9,14 +9,11 @@ import com.cordestitch.entity.user.UserEntity;
 import com.cordestitch.enums.DeliveryStatus;
 import com.cordestitch.enums.OrderStatus;
 import com.cordestitch.enums.ReturnStatus;
-import com.cordestitch.exception.alteration.SlotDataNotFoundException;
 import com.cordestitch.repository.order.OrderItemRepository;
 import com.cordestitch.repository.user.UserRepository;
-import com.cordestitch.request.alteration.RescheduleOrCancelRequest;
 import com.cordestitch.request.webhook.*;
 import com.cordestitch.response.SuccessResponse;
 import com.cordestitch.response.order.CancelOrderResponse;
-import com.cordestitch.service.service.alteration.AlterationService;
 import com.cordestitch.service.service.order.OrderService;
 import com.cordestitch.service.service.whatsapp.WhatsAppService;
 import com.cordestitch.service.serviceimplementation.webhook.WebHookServiceImplementation;
@@ -55,10 +52,6 @@ class WebHookServiceImplementationTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private AlterationService alterationService;
-
 
     @BeforeEach
     void setUp() {
@@ -188,22 +181,6 @@ class WebHookServiceImplementationTest {
         request.getEntry().getFirst().getChanges().getFirst().setField("messages");
         request.getEntry().getFirst().getChanges().getFirst().getValue().setMessages(Collections.emptyList());
 
-        SuccessResponse response = webHookServiceImplementation.handleWebhookEvent(request);
-        assertEquals(HttpStatus.OK.value(), response.getStatusCode());
-        assertEquals(Constants.SUCCESS, response.getMessage());
-    }
-
-    @Test
-    void testHandleWebhookEvent_to_send_someThingWentWrongMessage() {
-        WebHookEventRequest request = getWebHookRequest();
-        request.getEntry().getFirst().getChanges().getFirst().setField("messages");
-        request.getEntry().getFirst().getChanges().getFirst().getValue().getMessages().getFirst().getInteractive().setListReply(null);
-        request.getEntry().getFirst().getChanges().getFirst().getValue().getMessages().getFirst().getInteractive().getButtonReply().setTitle(WhatsAppConstants.YES_CANCEL_BUTTON);
-        request.getEntry().getFirst().getChanges().getFirst().getValue().getMessages().getFirst().getInteractive().getButtonReply().setId("CANCEL_IT9876765_2025-02-21_T_10:00-11:00");
-        when(userRepository.findUserByPhoneNumber(anyString())).thenReturn(getUserEntity());
-        doThrow(new SlotDataNotFoundException("Slot not found"))
-                .when(alterationService)
-                .rescheduleOrCancelSlotTimes(any(RescheduleOrCancelRequest.class));
         SuccessResponse response = webHookServiceImplementation.handleWebhookEvent(request);
         assertEquals(HttpStatus.OK.value(), response.getStatusCode());
         assertEquals(Constants.SUCCESS, response.getMessage());

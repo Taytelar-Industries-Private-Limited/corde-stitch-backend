@@ -3,7 +3,6 @@ package com.cordestitch.controller.user;
 import com.cordestitch.request.user.*;
 import com.cordestitch.response.SuccessResponse;
 import com.cordestitch.response.otp.UpdateDataResponse;
-import com.cordestitch.response.user.ServiceResponse;
 import com.cordestitch.response.user.UserDetailsResponse;
 import com.cordestitch.service.service.user.AuthRegisterService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -110,11 +109,5 @@ public class AuthRegisterController {
     public ResponseEntity<SuccessResponse> updateUserDetails(@Valid @RequestBody UpdateUserDetailsRequest request) {
         SuccessResponse response = authRegisterService.updateUserDetails(request);
         return ResponseEntity.status(response.getStatusCode()).body(response);
-    }
-
-    @PostMapping("/check-service-availability")
-    public ResponseEntity<ServiceResponse> checkServiceAvailability(@Valid @RequestBody ServiceRequest request) {
-        ServiceResponse serviceResponse = authRegisterService.checkServiceAvailability(request);
-        return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 }

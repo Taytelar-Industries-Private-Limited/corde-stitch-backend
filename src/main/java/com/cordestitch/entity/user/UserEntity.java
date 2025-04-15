@@ -1,6 +1,5 @@
 package com.cordestitch.entity.user;
 
-import com.cordestitch.entity.alteration.SlotEntity;
 import com.cordestitch.entity.customization.UserCustomizationEntity;
 import com.cordestitch.entity.loyalty.LoyaltyPointsEntity;
 import com.cordestitch.entity.order.OrderEntity;
@@ -83,10 +82,6 @@ public class UserEntity {
     @ToString.Exclude
     private List<UserCustomizationEntity> userCustomizationEntityList;
 
-    @OneToMany(mappedBy = "userEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @ToString.Exclude
-    @JsonIgnore
-    private List<SlotEntity> slotEntities;
 
     @OneToOne(mappedBy = "userEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude

@@ -159,7 +159,6 @@ class LoyaltyPointTransactionSchedulerTest {
         userEntity.setUserId("UID123");
         userEntity.setGender("male");
         userEntity.setReferred(true);
-        userEntity.setSlotEntities(new ArrayList<>());
         userEntity.setOrderEntities(new ArrayList<>());
         userEntity.setUserCreatedAt(LocalDateTime.now());
         userEntity.setReferredReferralCode("123456");

@@ -1,17 +1,13 @@
 package com.cordestitch.service.serviceimplementation.webhook;
 
 import com.cordestitch.entity.order.OrderItemEntity;
-import com.cordestitch.entity.user.UserEntity;
 import com.cordestitch.enums.DeliveryStatus;
 import com.cordestitch.enums.OrderStatus;
 import com.cordestitch.repository.order.OrderItemRepository;
-import com.cordestitch.repository.user.UserRepository;
-import com.cordestitch.request.alteration.RescheduleOrCancelRequest;
 import com.cordestitch.request.order.CancelOrderRequest;
 import com.cordestitch.request.webhook.*;
 import com.cordestitch.response.SuccessResponse;
 import com.cordestitch.response.order.CancelOrderResponse;
-import com.cordestitch.service.service.alteration.AlterationService;
 import com.cordestitch.service.service.order.OrderService;
 import com.cordestitch.service.service.webhook.WebHookService;
 import com.cordestitch.service.service.whatsapp.WhatsAppService;
@@ -24,12 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,10 +38,6 @@ public class WebHookServiceImplementation implements WebHookService {
     private final OrderService orderService;
 
     private final OrderItemRepository orderItemRepository;
-
-    private final UserRepository userRepository;
-
-    private final AlterationService alterationService;
 
     @Value("${webhook.verify.token}")
     private String accessToken;
@@ -77,8 +65,6 @@ public class WebHookServiceImplementation implements WebHookService {
                     .forEach(change -> {
                         ValueRequest value = change.getValue();
                         if (WhatsAppConstants.WEBHOOK_MESSAGE.equals(change.getField())) {
-                            // can be removed processMessageStatuses method in dev added only for testing purpose
-                            processMessageStatuses(value);
                             processUserReplies(value);
                         } else
                             log.warn("Unhandled field type: {}", change.getField());
@@ -90,17 +76,6 @@ public class WebHookServiceImplementation implements WebHookService {
             whatsAppService.sendSomeThingWentWrong(recipientNumber, WhatsAppConstants.TECHNICAL_ISSUE);
         }
         return new SuccessResponse(Constants.SUCCESS, HttpStatus.OK.value());
-    }
-
-    // can be removed processMessageStatuses method in dev added only for testing purpose
-    private void processMessageStatuses(ValueRequest value) {
-        if (!isNull(value.getStatuses()) && !value.getStatuses().isEmpty()) {
-            for (StatusRequest status : value.getStatuses()) {
-                if (!isNull(status.getConversation()))
-                    log.info("Message Status Update: ID={}, Status={}, Recipient={}", status.getId(), status.getStatus(), status.getRecipientId());
-            }
-        } else
-            log.warn("No status updates found.");
     }
 
     private void processUserReplies(ValueRequest value) {
@@ -156,12 +131,6 @@ public class WebHookServiceImplementation implements WebHookService {
             case WhatsAppConstants.TRACK_ORDER_BUTTON:
                 sendOrderTrackingUpdates(message, recipientNumber);
                 break;
-            case WhatsAppConstants.CANCEL_APPOINTMENT_BUTTON:
-                whatsAppService.cancelAppointmentActionRequest(recipientNumber, payLoadData);
-                break;
-            case WhatsAppConstants.RESCHEDULE_APPOINTMENT_BUTTON:
-                whatsAppService.sendAlterationReschedulingSlotDate(recipientNumber, payLoadData);
-                break;
             default:
                 log.info("Button type unknown {}", buttonMessageBody);
                 break;
@@ -206,9 +175,6 @@ public class WebHookServiceImplementation implements WebHookService {
             case WhatsAppConstants.CONTACT_US:
                 whatsAppService.sendTextMessage(recipientNumber, WhatsAppConstants.CONTACT_US_MESSAGE_BODY);
                 break;
-            case WhatsAppConstants.YES_CANCEL_BUTTON:
-                cancelFitOrAlterationAppointment(recipientNumber, interactiveButtonReplyId);
-                break;
             default:
                 log.info("Unknown interactive reply {}", buttonReply.getTitle());
 
@@ -224,10 +190,6 @@ public class WebHookServiceImplementation implements WebHookService {
 
         if (isCancellationReason(listReplyTitle)) {
             handleCancellation(listReplyTitle, listReplyId, recipientNumber);
-        } else if (isValidDateFormat(listReplyTitle)) {
-            sendAvailableTimeSlots(recipientNumber, listReplyId);
-        } else if (isValidTimeFormat(listReplyTitle)) {
-            rescheduleSlot(listReplyId, recipientNumber);
         } else {
             sendCategoryTypes(listReplyTitle, recipientNumber);
         }
@@ -295,60 +257,6 @@ public class WebHookServiceImplementation implements WebHookService {
         return orderService.cancelOrder(cancelOrderRequest);
     }
 
-    private void cancelFitOrAlterationAppointment(String recipientNumber, String buttonReplyId) {
-        RescheduleOrCancelRequest rescheduleOrCancelRequest = extractCancelAppointmentData(buttonReplyId, recipientNumber);
-        log.info("Cancelling the appointment {}", rescheduleOrCancelRequest);
-        alterationService.rescheduleOrCancelSlotTimes(rescheduleOrCancelRequest);
-    }
-
-    private void rescheduleSlot(String listReplyId, String recipientNumber) {
-
-        LocalDate oldSlotDate = Optional.ofNullable(extractDate(listReplyId, "IT\\d+_", "_T_"))
-                .orElseGet(() -> Optional.ofNullable(extractDate(listReplyId, "t_", "_T_"))
-                        .orElseGet(() -> extractDate(listReplyId, "t _", "_T_")));
-        LocalTime oldStartTime = extractTime(listReplyId, "_T_", "-");
-        LocalTime oldEndTime = extractTime(listReplyId, "-", "_N_");
-        LocalDate newSlotDate = extractDate(listReplyId, "_N_", "_NT_");
-        LocalTime newStartTime = extractTime(listReplyId, "_NT_", "-");
-        LocalTime newEndTime = extractTime(listReplyId, "-", "$");
-
-        RescheduleOrCancelRequest rescheduleOrCancelRequest = mapToRescheduleOrCancelRequest(recipientNumber, oldStartTime, oldEndTime, oldSlotDate, newStartTime, newEndTime, newSlotDate);
-
-        alterationService.rescheduleOrCancelSlotTimes(rescheduleOrCancelRequest);
-        log.info("Time slot has been rescheduled");
-    }
-
-
-    private RescheduleOrCancelRequest extractCancelAppointmentData(String buttonReplyId, String recipientNumber) {
-
-        LocalDate slotDate = Optional.ofNullable(extractDate(buttonReplyId, "IT\\d+_", "_T_"))
-                .orElseGet(() -> Optional.ofNullable(extractDate(buttonReplyId, "t_", "_T_"))
-                        .orElseGet(() -> extractDate(buttonReplyId, "t _", "_T_")));
-        LocalTime startTime = extractTime(buttonReplyId, "_T_", "-");
-        LocalTime endTime = extractTime(buttonReplyId, "-", "");
-
-        return mapToRescheduleOrCancelRequest(recipientNumber, startTime, endTime, slotDate, null, null, null);
-    }
-
-    private RescheduleOrCancelRequest mapToRescheduleOrCancelRequest(String recipientNumber, LocalTime startTime, LocalTime endTime, LocalDate slotDate, LocalTime newStartTime, LocalTime newEndTime, LocalDate newSlotDate) {
-
-        String phoneNumber = (recipientNumber.startsWith("91") && recipientNumber.length() > 10)
-                ? recipientNumber.substring(2) : recipientNumber;
-        UserEntity userEntity = userRepository.findUserByPhoneNumber(phoneNumber);
-
-        RescheduleOrCancelRequest rescheduleOrCancelRequest = new RescheduleOrCancelRequest();
-        rescheduleOrCancelRequest.setReschedule(!isNull(newStartTime) && !isNull(newEndTime) && !isNull(newSlotDate));
-        rescheduleOrCancelRequest.setUserId(userEntity.getUserId());
-        rescheduleOrCancelRequest.setStartTime(startTime);
-        rescheduleOrCancelRequest.setEndTime(endTime);
-        rescheduleOrCancelRequest.setSlotDate(slotDate);
-        rescheduleOrCancelRequest.setNewStartTime(newStartTime);
-        rescheduleOrCancelRequest.setNewEndTime(newEndTime);
-        rescheduleOrCancelRequest.setNewSlotDate(newSlotDate);
-
-        return rescheduleOrCancelRequest;
-    }
-
     private String extractOrderItemId(String orderItemId) {
         Pattern pattern = Pattern.compile(Constants.ORDER_ITEM_ID + "\\d+");
         Matcher matcher = pattern.matcher(orderItemId);
@@ -357,27 +265,6 @@ public class WebHookServiceImplementation implements WebHookService {
         return matcher.find() ? matcher.group(0) : "order Item id not found";
     }
 
-    private LocalDate extractDate(String input, String startDelimiter, String endDelimiter) {
-        String regex = startDelimiter + "(\\d{4}-\\d{2}-\\d{2})" + endDelimiter;
-        return extractLocalDate(input, regex);
-    }
-
-    private LocalTime extractTime(String input, String startDelimiter, String endDelimiter) {
-        String regex = startDelimiter + "(\\d{2}:\\d{2}[APM]*)" + endDelimiter;
-        return extractLocalTime(input, regex);
-    }
-
-    private LocalDate extractLocalDate(String input, String regex) {
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(input);
-        return matcher.find() ? LocalDate.parse(matcher.group(1)) : null;
-    }
-
-    private LocalTime extractLocalTime(String input, String regex) {
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(input);
-        return matcher.find() ? LocalTime.parse(matcher.group(1).replace("AM", "").replace("PM", "")) : null;
-    }
 
     private boolean isCancellationReason(String listReplyTitle) {
         Set<String> cancellationReasons = new HashSet<>(Arrays.asList(
@@ -391,24 +278,5 @@ public class WebHookServiceImplementation implements WebHookService {
                 WhatsAppConstants.QUALITY_CONCERN
         ));
         return cancellationReasons.contains(listReplyTitle);
-    }
-
-    private boolean isValidDateFormat(String dateString) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        try {
-            formatter.parse(dateString);
-            return true;
-        } catch (DateTimeParseException e) {
-            return false;
-        }
-    }
-
-    private boolean isValidTimeFormat(String slotTime) {
-        String timePattern = "^(0[1-9]|1\\d):[0-5]\\d(AM|PM)-(0[1-9]|1\\d):[0-5]\\d(AM|PM)$";
-        return Pattern.matches(timePattern, slotTime);
-    }
-
-    private void sendAvailableTimeSlots(String recipientNumber, String listReplyPayLoad) {
-        whatsAppService.sendAlterationReschedulingSlotTimes(recipientNumber, listReplyPayLoad);
     }
 }
