@@ -21,6 +21,4 @@ public class HomePageResponse implements Serializable {
     private List<HomePageTrendingProduct> homePageTrendingProducts;
 
     private List<HomePageLandscapeImage> homePageSubCategoryImages;
-
-    private List<HomePageLandscapeImage> homePageCustomizationImages;
 }

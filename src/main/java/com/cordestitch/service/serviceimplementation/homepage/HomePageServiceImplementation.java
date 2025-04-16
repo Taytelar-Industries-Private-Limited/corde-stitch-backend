@@ -54,8 +54,6 @@ public class HomePageServiceImplementation implements HomePageService {
 
     private static final String HOME_PAGE_COLLECTION = "Home Page Collection";
 
-    private static final String CUSTOMIZATION_COLLECTION = "Customization Collection";
-
     @Value("${aws.buckets.productImages}")
     private String bucketName;
 
@@ -98,7 +96,6 @@ public class HomePageServiceImplementation implements HomePageService {
 
         List<HomePageLandscapeImage> homePageSubCategoryImages = new ArrayList<>();
         List<HomePageLandscapeImage> homePageLandscapeImages = new ArrayList<>();
-        List<HomePageLandscapeImage> homePageCustomizationImages = new ArrayList<>();
 
         if (!homePageEntityList.isEmpty()) {
             homePageSubCategoryImages = homePageEntityList.stream()
@@ -117,13 +114,6 @@ public class HomePageServiceImplementation implements HomePageService {
                     ))
                     .toList();
 
-            homePageCustomizationImages = homePageEntityList.stream()
-                    .filter(homePageEntity -> CUSTOMIZATION_COLLECTION.contains(homePageEntity.getDescription()))
-                    .map(homePageEntity -> new HomePageLandscapeImage(
-                            homePageEntity.getDescription(),
-                            homePageEntity.getHomePageImageUrl()
-                    ))
-                    .toList();
         }
 
         Optional<List<Product>> optionalProducts = productRepository.findByProductStatus(TRENDING);
@@ -165,8 +155,7 @@ public class HomePageServiceImplementation implements HomePageService {
         HomePageResponse homePageResponse = new HomePageResponse(
                 homePageLandscapeImages,
                 homePageTrendingProducts,
-                homePageSubCategoryImages,
-                homePageCustomizationImages
+                homePageSubCategoryImages
         );
 
         log.info("Home Page Response: {}", homePageResponse);
