@@ -46,7 +46,6 @@ public class Constants {
     public static final String BANK_ACCOUNT_DETAILS_MISSING_MSG = "Bank account details are missing in the fund account response.";
     public static final String LOYALTY_POINTS_REJECTED = "Loyalty Points Rejected.";
     public static final int RETURN_DAYS_POLICY = 7;
-    public static final int RETURN_DAYS_POLICY_FOR_CUSTOMIZATION = 0;
     public static final String NORMAL_AUTHENTICATION = "Normal Registration";
     public static final String GOOGLE_AUTHENTICATION = "Google Registration";
     public static final String FACEBOOK_AUTHENTICATION = "Facebook Registration";
@@ -105,7 +104,6 @@ public class Constants {
     public static final String COLOR_QUANTITY_ID = "CQ-ID";
     public static final String CARD_ID = "CARD-ID";
     public static final String ADDRESS_ID = "ADDRESS-ID";
-    public static final String SLOT_ID = "SLOT-ID";
     public static final String CARD_ADDED_SUCCESSFULLY = "Card Added Successfully";
     public static final String CARD_DELETE_SUCCESSFULLY = "Card Deleted Successfully";
     public static final String STOCK_NOT_FOUND = "Stock not found for size : {} ";
@@ -114,7 +112,6 @@ public class Constants {
     public static final String CATEGORY_NOT_FOUND = "Category not found : {}";
     public static final String SUBCATEGORY_NOT_FOUND = "Subcategory not found : {}";
     public static final String HOME_PAGE_ID = "HM-ID";
-    public static final String CUSTOMIZATION_TYPE_ERROR = "Customization type already exists";
     public static final String EXCEPTION = "Exception occurs : {}";
 
     public static final String ORDER_ITEM_NOT_FOUND = "Order Item Not Found";
@@ -122,10 +119,6 @@ public class Constants {
     public static final String EMAIL_MISMATCH = "The email address used for validation does not match the email address associated with the OTP. Please check your email and try again.";
     public static final String PHONE_NUMBER_MISMATCH = "The phone number used for validation does not match the phone number associated with the OTP. Please check your phone number and try again.";
     public static final String OTP_MISMATCH = "The OTP you entered is incorrect. Please check your OTP and try again.";
-    public static final String FABRIC_PARSE_ERROR = "Error parsing fabric details";
-    public static final String USER_CUSTOMIZATION_ID = "UC-ID";
-    public static final String CART_ITEM_NOT_FOUND = "Cart item not found for id ";
-    public static final String IMAGES_ADDED_SUCCESSFULLY = "Images added successfully";
     public static final String REQUEST_DATA_MISSED = "No email address or phone number provided.";
     public static final String SAME_EMAIL_ERROR_MSG = "The new email address is the same as the current one.";
     public static final String SAME_PHONE_NUMBER_ERROR_MSG = "The new phone number is the same as the current one.";

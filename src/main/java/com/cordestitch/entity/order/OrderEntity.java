@@ -36,7 +36,7 @@ public class OrderEntity {
     @Column(name = "payment_method")
     private String paymentMethod;
 
-    @Column(name = "redeemed_loyaltyPoints")
+    @Column(name = "redeemed_loyalty_points")
     private Double redeemedLoyaltyPoints;
 
     @Column(name = "order_sub_total")

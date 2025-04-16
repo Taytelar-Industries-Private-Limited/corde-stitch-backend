@@ -51,7 +51,7 @@ public class OrderItemEntity {
     @Column(name = "order_status", nullable = false)
     private OrderStatus orderStatus;
 
-    @Column(name = "redeemed_loyaltyPoints")
+    @Column(name = "redeemed_loyalty_points")
     private Double redeemedLoyaltyPoints;
 
     @Column(name = "cancellation_reason")
