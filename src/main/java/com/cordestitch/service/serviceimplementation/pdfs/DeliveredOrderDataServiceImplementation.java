@@ -163,7 +163,7 @@ public class DeliveredOrderDataServiceImplementation implements DeliveredOrderSe
         companyDetailsTable.addHeaderCell(new Cell().add(watermarkImage).setVerticalAlignment(VerticalAlignment.TOP).setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.LEFT));
 
         Paragraph companyParagraph = new Paragraph()
-                .add(new Text("cordestitch INDUSTRIES PVT LTD").setFontColor(fontColor).setFont(companyFont).setFontSize(20)).setPaddingLeft(25f)
+                .add(new Text("Cordestitch INDUSTRIES PVT LTD").setFontColor(fontColor).setFont(companyFont).setFontSize(20)).setPaddingLeft(25f)
                 .add("\n")
                 .add(new Text("Rajanukunte, Bengaluru, 560064 \n").setFontColor(fontColor).setFont(companyFont).setFontSize(12)).setPaddingLeft(25f)
                 .add(new Text("GST No: xxxxxxxxx \n\n")).setFontColor(fontColor).setFont(companyFont).setPaddingLeft(25f);
